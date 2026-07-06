@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Wire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #12151a;
+    --hairline: #23272e;
+    --text: #d8d5ce;
+    --muted: #5b6169;
+    --amber: #e3a857;
+    --teal: #4fa89e;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* --- Ticker strip: signature element --- */
+  .ticker-strip {
+    background: var(--panel);
+    border-bottom: 1px solid var(--hairline);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 6px 0;
+  }
+
+  .ticker-track {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    animation: scroll 40s linear infinite;
+    padding-left: 100%;
+  }
+
+  .ticker-track span { margin-right: 48px; }
+
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track { animation: none; padding-left: 24px; }
+  }
+
+  /* --- Header --- */
+  header {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 16px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--amber);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .rule {
+    border: none;
+    border-top: 1px solid var(--amber);
+    opacity: 0.5;
+    margin: 14px 0 0;
+  }
+
+  /* --- Feed --- */
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 8px 20px 60px;
+  }
+
+  .alert-row {
+    display: grid;
+    grid-template-columns: 84px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .alert-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .alert-meta .source {
+    display: block;
+    color: var(--teal);
+    margin-top: 4px;
+  }
+
+  .alert-title a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.45;
+  }
+
+  .alert-title a:hover,
+  .alert-title a:focus-visible {
+    color: var(--amber);
+    text-decoration: underline;
+  }
+
+  .empty-state {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    font-style: italic;
+    padding: 60px 0;
+    text-align: center;
+    font-size: 13px;
+  }
+
+  a:focus-visible, .dot:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="ticker-strip">
+    <div class="ticker-track" id="tickerTrack">
+      <span>Waiting for wire activity&hellip;</span>
+    </div>
+  </div>
+
+  <header>
+    <div class="title-row">
+      <h1>Market Wire</h1>
+      <div class="status">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="lastUpdated">checking&hellip;</span>
+      </div>
+    </div>
+    <hr class="rule">
+  </header>
+
+  <main id="feed">
+    <p class="empty-state">Loading feed&hellip;</p>
+  </main>
+
+<script>
+  const REFRESH_MS = 20000;
+
+  function timeAgo(isoString) {
+    const seconds = Math.floor((Date.now() - new Date(isoString)) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h ago`;
+  }
+
+  function formatClock(isoString) {
+    const d = new Date(isoString);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function render(alerts) {
+    const feed = document.getElementById('feed');
+    const ticker = document.getElementById('tickerTrack');
+    const lastUpdated = document.getElementById('lastUpdated');
+
+    lastUpdated.textContent = `updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    if (!alerts.length) {
+      feed.innerHTML = '<p class="empty-state">No alerts yet — the wire is quiet.</p>';
+      ticker.innerHTML = '<span>Waiting for wire activity&hellip;</span>';
+      return;
+    }
+
+    feed.innerHTML = alerts.map(a => `
+      <div class="alert-row">
+        <div class="alert-meta">
+          ${formatClock(a.fetched_at)}
+          <span class="source">${escapeHtml(a.source)}</span>
+        </div>
+        <div class="alert-title">
+          <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener noreferrer">
+            ${escapeHtml(a.title)}
+          </a>
+        </div>
+      </div>
+    `).join('');
+
+    const tickerItems = alerts.slice(0, 8)
+      .map(a => `<span>${escapeHtml(a.title)} (${timeAgo(a.fetched_at)})</span>`)
+      .join('');
+    ticker.innerHTML = tickerItems + tickerItems; // duplicate for seamless loop
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function escapeAttr(str) {
+    return (str || '').replace(/"/g, '&quot;');
+  }
+
+  async function loadAlerts() {
+    try {
+      const res = await fetch('alerts.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('alerts.json not found yet');
+      const alerts = await res.json();
+      render(alerts);
+    } catch (e) {
+      document.getElementById('feed').innerHTML =
+        '<p class="empty-state">No alerts.json yet — run <code>uv run main.py</code> at least once.</p>';
+    }
+  }
+
+  loadAlerts();
+  setInterval(loadAlerts, REFRESH_MS);
+</script>
+
+</body>
+</html>
