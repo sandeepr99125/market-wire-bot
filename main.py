@@ -20,10 +20,13 @@ from storage import load_seen, save_seen, dedupe_entries
 from formatter import format_alert
 from poster import post_alert
 from web_output import record_alert
+from market_data import fetch_market_kpis
 
 
 def run_once():
     print(f"[{datetime.now(timezone.utc).isoformat()}] Checking feeds...")
+
+    fetch_market_kpis()
 
     all_entries = fetch_all_entries()
     relevant_entries = filter_entries(all_entries)

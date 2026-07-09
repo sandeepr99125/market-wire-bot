@@ -57,6 +57,64 @@
     .ticker-track { animation: none; padding-left: 24px; }
   }
 
+  /* --- KPI strip --- */
+  .kpi-strip {
+    background: var(--panel);
+    border-bottom: 1px solid var(--hairline);
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .kpi-track {
+    display: flex;
+    gap: 1px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .kpi-tile {
+    flex: 1 0 auto;
+    min-width: 108px;
+    padding: 10px 14px;
+    border-right: 1px solid var(--hairline);
+  }
+
+  .kpi-tile:last-child { border-right: none; }
+
+  .kpi-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .kpi-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  .kpi-change {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+
+  .kpi-change.up { color: #6bbf8f; }
+  .kpi-change.down { color: #d9756b; }
+  .kpi-change.flat { color: var(--muted); }
+
+  .kpi-stale {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
   /* --- Header --- */
   header {
     max-width: 760px;
@@ -184,6 +242,10 @@
     </div>
   </div>
 
+  <div class="kpi-strip">
+    <div class="kpi-track" id="kpiTrack"></div>
+  </div>
+
   <header>
     <div class="title-row">
       <h1>Market Wire</h1>
@@ -250,6 +312,60 @@
     ticker.innerHTML = tickerItems + tickerItems; // duplicate for seamless loop
   }
 
+  const KPI_ORDER = ['nifty', 'sensex', 'gold', 'silver', 'crude', 'fii', 'dii', 'usd_inr'];
+
+  function formatNumber(n) {
+    return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  }
+
+  function renderKpiTile(kpi) {
+    if (!kpi) return '';
+
+    let valueText, changeHtml = '';
+
+    if ('net_value_cr' in kpi) {
+      // FII/DII: net inflow (green) vs net outflow (red)
+      const net = kpi.net_value_cr;
+      const cls = net > 0 ? 'up' : net < 0 ? 'down' : 'flat';
+      const sign = net > 0 ? '+' : '';
+      valueText = `${sign}${formatNumber(net)} Cr`;
+      changeHtml = `<div class="kpi-change ${cls}">${escapeHtml(kpi.date || '')}</div>`;
+    } else {
+      const unit = kpi.unit ? ` ${kpi.unit}` : '';
+      valueText = `${formatNumber(kpi.value)}${unit}`;
+      if (typeof kpi.change_pct === 'number') {
+        const cls = kpi.change_pct > 0 ? 'up' : kpi.change_pct < 0 ? 'down' : 'flat';
+        const arrow = kpi.change_pct > 0 ? '▲' : kpi.change_pct < 0 ? '▼' : '–';
+        changeHtml = `<div class="kpi-change ${cls}">${arrow} ${Math.abs(kpi.change_pct).toFixed(2)}%</div>`;
+      }
+    }
+
+    return `
+      <div class="kpi-tile">
+        <div class="kpi-label">${escapeHtml(kpi.label)}</div>
+        <div class="kpi-value">${escapeHtml(valueText)}</div>
+        ${changeHtml}
+        <div class="kpi-stale">${kpi.fetched_at ? timeAgo(kpi.fetched_at) : ''}</div>
+      </div>
+    `;
+  }
+
+  function renderKpis(kpis) {
+    const track = document.getElementById('kpiTrack');
+    const tiles = KPI_ORDER.map(key => renderKpiTile(kpis[key])).filter(Boolean);
+    track.innerHTML = tiles.length ? tiles.join('') : '';
+  }
+
+  async function loadKpis() {
+    try {
+      const res = await fetch('market_kpis.json', { cache: 'no-store' });
+      if (!res.ok) return;
+      renderKpis(await res.json());
+    } catch (e) {
+      // KPI strip just stays empty if market_kpis.json isn't there yet
+    }
+  }
+
   function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str || '';
@@ -273,7 +389,9 @@
   }
 
   loadAlerts();
+  loadKpis();
   setInterval(loadAlerts, REFRESH_MS);
+  setInterval(loadKpis, REFRESH_MS);
 </script>
 
 </body>
