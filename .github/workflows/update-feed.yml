@@ -1,10 +1,12 @@
 name: Update market wire
 
-# Runs automatically every 30 minutes, and lets you trigger it manually
-# from the Actions tab in GitHub for testing.
+# Runs automatically every 15 minutes, and lets you trigger it manually
+# from the Actions tab in GitHub for testing. GitHub's scheduler is
+# best-effort, not exact - actual gaps between runs can be longer,
+# especially under GitHub Actions load.
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 # Needed so this workflow is allowed to push the updated alerts.json
