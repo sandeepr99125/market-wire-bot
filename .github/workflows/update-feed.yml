@@ -14,6 +14,13 @@ on:
 permissions:
   contents: write
 
+# Queue overlapping runs instead of letting them race each other's
+# git push (a scheduled run and a manual trigger landing close
+# together caused exactly this failure before this was added).
+concurrency:
+  group: update-market-wire
+  cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
