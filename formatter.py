@@ -7,7 +7,22 @@ of the raw title) without touching fetching, filtering, or posting.
 """
 
 import html
+import os
 import re
+
+import anthropic
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+
+_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+
+_AI_SYSTEM_PROMPT = (
+    "You write one-sentence summaries of market news for a WhatsApp alert. "
+    "Given a headline and a short excerpt, write exactly one concise sentence "
+    "explaining what happened and why it matters to markets. Plain text only - "
+    "no preamble, no quotation marks, no restating the headline verbatim."
+)
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
@@ -63,13 +78,46 @@ def _truncate(text, limit=SUMMARY_MAX_LEN):
     return cut.rstrip(" ,.;:-") + "…"
 
 
+def _ai_summary(title, context):
+    """Asks Claude for a one-sentence summary. Returns "" on any failure
+    (no API key, network error, rate limit, etc.) so callers can fall
+    back to the feed's own description - this must never break the
+    pipeline just because the AI call didn't work this run."""
+    if not _client:
+        return ""
+    try:
+        response = _client.messages.create(
+            model=ANTHROPIC_MODEL,
+            max_tokens=100,
+            system=_AI_SYSTEM_PROMPT,
+            messages=[{
+                "role": "user",
+                "content": f"Headline: {title}\n\nExcerpt: {context}" if context else f"Headline: {title}",
+            }],
+        )
+        text = next((b.text for b in response.content if b.type == "text"), "")
+        return text.strip()
+    except Exception:
+        return ""
+
+
 def get_summary(entry):
-    """Returns the cleaned, truncated summary text for an entry, or ""
-    if there's nothing useful to show. Shared with web_output.py so the
-    dashboard and the WhatsApp alert show the same summary text."""
+    """Returns a one-sentence summary for an entry, or "" if there's
+    nothing useful to show. Shared with web_output.py so the dashboard
+    and the WhatsApp alert show the same summary text.
+
+    Prefers an AI-generated summary (set ANTHROPIC_API_KEY to enable);
+    falls back to a cleaned version of the feed's own description when
+    the API isn't configured or the call fails.
+    """
     title = entry.get("title", "").strip()
-    summary = _clean_summary(entry.get("summary", ""), title)
-    return _truncate(summary) if summary else ""
+    cleaned = _clean_summary(entry.get("summary", ""), title)
+
+    ai = _ai_summary(title, cleaned)
+    if ai:
+        return _truncate(ai)
+
+    return _truncate(cleaned) if cleaned else ""
 
 
 def format_alert(entry):

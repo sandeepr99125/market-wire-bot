@@ -27,6 +27,7 @@ jobs:
           WAHA_URL: ${{ secrets.WAHA_URL }}
           WAHA_API_KEY: ${{ secrets.WAHA_API_KEY }}
           WAHA_CHAT_ID: ${{ secrets.WAHA_CHAT_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: uv run main.py
 
       - name: Commit updated data if it changed
