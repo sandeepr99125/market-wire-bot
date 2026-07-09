@@ -1,20 +1,30 @@
 """
 Delivery layer: sends the formatted alert somewhere.
 
-Right now this just prints to the terminal, so you can verify the
-whole pipeline works before wiring up WhatsApp. In step 2, this file
-is the ONLY thing that changes - post_alert() will call the WAHA API
-instead of print(). Nothing else in the project needs to know.
+Posts to WhatsApp via a WAHA (WhatsApp HTTP API) instance. Falls back
+to printing to the terminal if WAHA isn't configured, so local runs
+still work without secrets set up.
 """
+
+import os
+
+import requests
+
+WAHA_URL = os.environ.get("WAHA_URL", "").rstrip("/")
+WAHA_API_KEY = os.environ.get("WAHA_API_KEY", "")
+WAHA_CHAT_ID = os.environ.get("WAHA_CHAT_ID", "")
 
 
 def post_alert(message):
-    print(message)
-    print("-" * 50)
-    # --- Step 2 will replace the two lines above with something like: ---
-    # import requests
-    # requests.post(
-    #     "http://localhost:3000/api/sendText",
-    #     json={"chatId": WAHA_CHANNEL_ID, "text": message},
-    #     headers={"X-Api-Key": WAHA_API_KEY},
-    # )
+    if not (WAHA_URL and WAHA_API_KEY and WAHA_CHAT_ID):
+        print(message)
+        print("-" * 50)
+        return
+
+    response = requests.post(
+        f"{WAHA_URL}/api/sendText",
+        json={"chatId": WAHA_CHAT_ID, "text": message, "session": "default"},
+        headers={"X-Api-Key": WAHA_API_KEY},
+        timeout=15,
+    )
+    response.raise_for_status()
