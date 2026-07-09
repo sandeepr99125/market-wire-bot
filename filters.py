@@ -6,21 +6,29 @@ as relevant* (smarter matching, an LLM call, sentiment scoring, etc.)
 without touching how data gets fetched or posted.
 """
 
+import re
+
 from config import WATCHLIST_NAMES, MARKET_KEYWORDS
+
+# Word-boundary matching, not plain substring - otherwise short terms
+# like "war" or "rbi" match inside unrelated words ("award", "arbitral").
+_NAME_PATTERNS = [re.compile(r"\b" + re.escape(name.lower()) + r"\b") for name in WATCHLIST_NAMES]
+_KEYWORD_PATTERNS = [re.compile(r"\b" + re.escape(kw.lower()) + r"\b") for kw in MARKET_KEYWORDS]
 
 
 def is_relevant(title, summary):
     """
-    An entry is relevant if it mentions a watchlist name AND a
-    market-related keyword. This two-part check keeps out noise
-    (e.g. Musk tweeting about something with zero market angle).
+    An entry is relevant if it mentions a watchlist name OR a
+    macro/sector market-moving keyword. Either alone is enough -
+    both lists are deliberately curated to broad-market movers, so
+    a single hit is already a good signal (see config.py).
     """
     text = f"{title} {summary}".lower()
 
-    name_hit = any(name.lower() in text for name in WATCHLIST_NAMES)
-    keyword_hit = any(kw.lower() in text for kw in MARKET_KEYWORDS)
+    name_hit = any(p.search(text) for p in _NAME_PATTERNS)
+    keyword_hit = any(p.search(text) for p in _KEYWORD_PATTERNS)
 
-    return name_hit and keyword_hit
+    return name_hit or keyword_hit
 
 
 def filter_entries(entries):
