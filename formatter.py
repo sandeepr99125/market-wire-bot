@@ -63,15 +63,24 @@ def _truncate(text, limit=SUMMARY_MAX_LEN):
     return cut.rstrip(" ,.;:-") + "…"
 
 
+def get_summary(entry):
+    """Returns the cleaned, truncated summary text for an entry, or ""
+    if there's nothing useful to show. Shared with web_output.py so the
+    dashboard and the WhatsApp alert show the same summary text."""
+    title = entry.get("title", "").strip()
+    summary = _clean_summary(entry.get("summary", ""), title)
+    return _truncate(summary) if summary else ""
+
+
 def format_alert(entry):
     title = entry.get("title", "").strip()
     link = entry.get("link", "").strip()
     source = entry.get("source_feed", "")
-    summary = _clean_summary(entry.get("summary", ""), title)
+    summary = get_summary(entry)
 
     blocks = [f"📰 *Market Alert*\n{title}"]
     if summary:
-        blocks.append(_truncate(summary))
+        blocks.append(summary)
     blocks.append(f"🔗 {link}\n📡 Source: {source}")
 
     return "\n\n".join(blocks)

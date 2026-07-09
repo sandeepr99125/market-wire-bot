@@ -11,6 +11,8 @@ import json
 import os
 from datetime import datetime, timezone
 
+from formatter import get_summary
+
 ALERTS_FILE = os.path.join(os.path.dirname(__file__), "alerts.json")
 MAX_HISTORY = 200
 
@@ -30,6 +32,7 @@ def record_alert(entry, message):
         "title": entry.get("title", "").strip(),
         "link": entry.get("link", "").strip(),
         "source": entry.get("source_feed", ""),
+        "summary": get_summary(entry),
         "message": message,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     })

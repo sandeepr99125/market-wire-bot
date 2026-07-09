@@ -154,6 +154,13 @@
     text-decoration: underline;
   }
 
+  .alert-summary {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+
   .empty-state {
     font-family: 'IBM Plex Mono', monospace;
     color: var(--muted);
@@ -232,6 +239,7 @@
           <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener noreferrer">
             ${escapeHtml(a.title)}
           </a>
+          ${a.summary ? `<div class="alert-summary">${escapeHtml(a.summary)}</div>` : ''}
         </div>
       </div>
     `).join('');
