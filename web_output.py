@@ -24,15 +24,19 @@ def load_alerts():
     return []
 
 
-def record_alert(entry, message):
-    """Appends one alert to the history file (newest first)."""
+def record_alert(entry, message, summary=None):
+    """Appends one alert to the history file (newest first). summary
+    can be precomputed (e.g. shared with format_alert's call) to avoid
+    a redundant get_summary() call - pass None to have it computed here."""
     alerts = load_alerts()
+    if summary is None:
+        summary = get_summary(entry)
 
     alerts.insert(0, {
         "title": entry.get("title", "").strip(),
         "link": entry.get("link", "").strip(),
         "source": entry.get("source_feed", ""),
-        "summary": get_summary(entry),
+        "summary": summary,
         "message": message,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
     })

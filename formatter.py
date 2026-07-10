@@ -120,11 +120,15 @@ def get_summary(entry):
     return _truncate(cleaned) if cleaned else ""
 
 
-def format_alert(entry):
+def format_alert(entry, summary=None):
+    """summary can be precomputed (e.g. fetched concurrently for a
+    batch of entries) to avoid a redundant get_summary() call - pass
+    None to have it computed here."""
     title = entry.get("title", "").strip()
     link = entry.get("link", "").strip()
     source = entry.get("source_feed", "")
-    summary = get_summary(entry)
+    if summary is None:
+        summary = get_summary(entry)
 
     blocks = [f"📰 *Market Alert*\n{title}"]
     if summary:

@@ -12,15 +12,18 @@ Dependencies are declared in pyproject.toml - uv reads that
 automatically and installs anything missing before running.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from feed_fetcher import fetch_all_entries
 from filters import filter_entries
 from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles
-from formatter import format_alert
+from formatter import format_alert, get_summary
 from poster import post_alert
 from web_output import record_alert, load_alerts
 from market_data import fetch_market_kpis
+
+MAX_SUMMARY_WORKERS = 5
 
 
 def run_once():
@@ -50,10 +53,18 @@ def run_once():
         return
 
     print(f"Found {len(new_entries)} new relevant item(s):\n")
-    for entry in new_entries:
-        message = format_alert(entry)
+
+    # Each summary is an independent network call (feed cleanup or a
+    # Claude API request) - fetch them concurrently instead of one at
+    # a time, then reuse the same result for both the posted message
+    # and the dashboard record instead of computing it twice.
+    with ThreadPoolExecutor(max_workers=MAX_SUMMARY_WORKERS) as executor:
+        summaries = list(executor.map(get_summary, new_entries))
+
+    for entry, summary in zip(new_entries, summaries):
+        message = format_alert(entry, summary=summary)
         post_alert(message)
-        record_alert(entry, message)
+        record_alert(entry, message, summary=summary)
 
 
 if __name__ == "__main__":
