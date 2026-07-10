@@ -6,6 +6,7 @@ formatter.py. These exercise only the deterministic, offline pieces
 regardless of whether ANTHROPIC_API_KEY is set in the environment.
 """
 
+import formatter
 from formatter import _clean_summary, _truncate, format_alert, SUMMARY_MAX_LEN
 
 
@@ -60,25 +61,48 @@ def test_truncate_cuts_long_text_at_word_boundary():
     assert not result[:-1].endswith(" ")  # trailing space stripped before ellipsis
 
 
-def test_format_alert_includes_precomputed_summary():
+def test_format_alert_uses_precomputed_summary_not_title(monkeypatch):
+    # _shorten_link makes a real network call - stub it so this test
+    # stays fast, free, and deterministic like the rest of the suite.
+    monkeypatch.setattr(formatter, "_shorten_link", lambda url: url)
+
     entry = {
         "title": "Gold price falls",
         "link": "https://example.com/a",
         "source_feed": "Test Source",
     }
     message = format_alert(entry, summary="Gold fell due to a stronger dollar.")
-    assert "Gold price falls" in message
+    # The title is intentionally NOT repeated when a summary exists -
+    # WhatsApp's own preview card already shows it, so repeating it
+    # here would be the exact redundancy this format is meant to avoid.
     assert "Gold fell due to a stronger dollar." in message
     assert "https://example.com/a" in message
-    assert "Test Source" in message
+    assert "Gold price falls" not in message
 
 
-def test_format_alert_omits_summary_block_when_empty():
+def test_format_alert_falls_back_to_title_when_summary_empty(monkeypatch):
+    monkeypatch.setattr(formatter, "_shorten_link", lambda url: url)
+
     entry = {
         "title": "Gold price falls",
         "link": "https://example.com/a",
         "source_feed": "Test Source",
     }
     message = format_alert(entry, summary="")
-    # Only two blocks (header, footer) joined by "\n\n" - no middle summary block
+    # With no summary, the title is the fallback so the message never
+    # ships empty even if the preview card fails to render.
+    assert "Gold price falls" in message
     assert message.count("\n\n") == 1
+
+
+def test_shorten_link_falls_back_to_original_on_failure(monkeypatch):
+    def _raise(*args, **kwargs):
+        raise ConnectionError("network unavailable")
+
+    monkeypatch.setattr(formatter.requests, "get", _raise)
+    original = "https://example.com/some/very/long/article/path"
+    assert formatter._shorten_link(original) == original
+
+
+def test_shorten_link_returns_empty_for_empty_url():
+    assert formatter._shorten_link("") == ""

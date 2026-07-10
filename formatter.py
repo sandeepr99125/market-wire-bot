@@ -11,6 +11,7 @@ import os
 import re
 
 import anthropic
+import requests
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = "claude-haiku-4-5"
@@ -18,10 +19,16 @@ ANTHROPIC_MODEL = "claude-haiku-4-5"
 _client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
 
 _AI_SYSTEM_PROMPT = (
-    "You write one-sentence summaries of market news for a WhatsApp alert. "
-    "Given a headline and a short excerpt, write exactly one concise sentence "
-    "explaining what happened and why it matters to markets. Plain text only - "
-    "no preamble, no quotation marks, no restating the headline verbatim."
+    "You write market news analysis for a WhatsApp alert. The message "
+    "already shows the article's own preview card above your text (title "
+    "plus the source's own excerpt), so don't just restate the raw facts "
+    "the reader has already seen. Write 3-4 sentences that briefly touch "
+    "what happened, then spend most of the space on the market impact and "
+    "the reason behind that impact - the analysis a reader can't already "
+    "get from the headline or excerpt. Plain text only - no preamble, no "
+    "quotation marks, no restating the headline verbatim, and no section "
+    "labels like 'Impact:' or 'Why:' - it should read as one flowing "
+    "paragraph, not a template."
 )
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -31,7 +38,7 @@ _BOILERPLATE_RE = re.compile(
     re.IGNORECASE,
 )
 
-SUMMARY_MAX_LEN = 220
+SUMMARY_MAX_LEN = 450
 SUMMARY_MIN_LEN = 15
 
 
@@ -88,7 +95,7 @@ def _ai_summary(title, context):
     try:
         response = _client.messages.create(
             model=ANTHROPIC_MODEL,
-            max_tokens=100,
+            max_tokens=260,
             system=_AI_SYSTEM_PROMPT,
             messages=[{
                 "role": "user",
@@ -99,6 +106,25 @@ def _ai_summary(title, context):
         return text.strip()
     except Exception:
         return ""
+
+
+def _shorten_link(url):
+    """Returns a shortened URL via TinyURL (free, keyless), or the
+    original URL unchanged on any failure - a long link is a fine
+    fallback, never worth blocking an alert over."""
+    if not url:
+        return url
+    try:
+        resp = requests.get(
+            "https://tinyurl.com/api-create.php",
+            params={"url": url},
+            timeout=8,
+        )
+        resp.raise_for_status()
+        short = resp.text.strip()
+        return short if short.startswith("http") else url
+    except Exception:
+        return url
 
 
 def get_summary(entry):
@@ -123,16 +149,20 @@ def get_summary(entry):
 def format_alert(entry, summary=None):
     """summary can be precomputed (e.g. fetched concurrently for a
     batch of entries) to avoid a redundant get_summary() call - pass
-    None to have it computed here."""
-    title = entry.get("title", "").strip()
+    None to have it computed here.
+
+    WhatsApp auto-generates a rich preview card (image, title, the
+    source's own excerpt, domain) from the link, so the message body
+    doesn't repeat a "Market Alert" label, the title as its own block,
+    or a source line - all of that is redundant with what the card
+    already shows. The body is just the analysis text (which itself
+    briefly covers what happened, as a fallback if the card doesn't
+    render) plus the link.
+    """
     link = entry.get("link", "").strip()
-    source = entry.get("source_feed", "")
     if summary is None:
         summary = get_summary(entry)
 
-    blocks = [f"📰 *Market Alert*\n{title}"]
-    if summary:
-        blocks.append(summary)
-    blocks.append(f"🔗 {link}\n📡 Source: {source}")
+    body = summary if summary else entry.get("title", "").strip()
 
-    return "\n\n".join(blocks)
+    return f"📰 {body}\n\n{_shorten_link(link)}"
