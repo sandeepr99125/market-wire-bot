@@ -61,8 +61,6 @@
   .kpi-strip {
     background: var(--panel);
     border-bottom: 1px solid var(--hairline);
-    overflow-x: auto;
-    scrollbar-width: thin;
   }
 
   .kpi-track {
@@ -71,6 +69,22 @@
     max-width: 760px;
     margin: 0 auto;
     padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hairline) transparent;
+  }
+
+  .kpi-track::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .kpi-track::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .kpi-track::-webkit-scrollbar-thumb {
+    background: var(--hairline);
+    border-radius: 2px;
   }
 
   .kpi-tile {
