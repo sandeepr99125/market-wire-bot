@@ -23,7 +23,12 @@ def post_alert(message):
 
     response = requests.post(
         f"{WAHA_URL}/api/sendText",
-        json={"chatId": WAHA_CHAT_ID, "text": message, "session": "default"},
+        json={
+            "chatId": WAHA_CHAT_ID,
+            "text": message,
+            "session": "default",
+            "linkPreview": True,
+        },
         headers={"X-Api-Key": WAHA_API_KEY},
         timeout=15,
     )

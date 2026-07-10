@@ -11,7 +11,6 @@ import os
 import re
 
 import anthropic
-import requests
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = "claude-haiku-4-5"
@@ -22,13 +21,17 @@ _AI_SYSTEM_PROMPT = (
     "You write market news analysis for a WhatsApp alert. The message "
     "already shows the article's own preview card above your text (title "
     "plus the source's own excerpt), so don't just restate the raw facts "
-    "the reader has already seen. Write 3-4 sentences that briefly touch "
-    "what happened, then spend most of the space on the market impact and "
-    "the reason behind that impact - the analysis a reader can't already "
-    "get from the headline or excerpt. Plain text only - no preamble, no "
-    "quotation marks, no restating the headline verbatim, and no section "
-    "labels like 'Impact:' or 'Why:' - it should read as one flowing "
-    "paragraph, not a template."
+    "the reader has already seen.\n\n"
+    "Respond using EXACTLY this line format:\n"
+    "WHAT: <one brief sentence on what happened>\n"
+    "IMPACT: <one sentence on the market impact>\n"
+    "REASON: <one sentence on why this has that impact>\n\n"
+    "Always include the WHAT line. Only include the IMPACT line if there's "
+    "a real market impact worth noting, and only include the REASON line "
+    "if the reason isn't already obvious from WHAT/IMPACT - omit either "
+    "line entirely rather than padding it with generic filler just to "
+    "fill out the format. Each line is plain text - no quotation marks, "
+    "no restating the headline verbatim."
 )
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -38,8 +41,19 @@ _BOILERPLATE_RE = re.compile(
     re.IGNORECASE,
 )
 
-SUMMARY_MAX_LEN = 450
+SUMMARY_MAX_LEN = 550
 SUMMARY_MIN_LEN = 15
+
+_REQUIRED_STRUCTURED_LABEL = "Market Alert"
+
+# (prefix Claude uses, display label, icon shown before the label - the
+# leading 📰 in format_alert() already marks "Market Alert" itself, so
+# it has no separate icon here).
+_STRUCTURED_LINE_PREFIXES = (
+    ("WHAT:", _REQUIRED_STRUCTURED_LABEL, None),
+    ("IMPACT:", "Impact", "💥"),
+    ("REASON:", "Reason", "💡"),
+)
 
 
 def _clean_summary(raw_summary, title):
@@ -85,10 +99,43 @@ def _truncate(text, limit=SUMMARY_MAX_LEN):
     return cut.rstrip(" ,.;:-") + "…"
 
 
+def _parse_structured_summary(text):
+    """Parses the WHAT:/IMPACT:/REASON: lines Claude was asked to
+    produce into a labeled, WhatsApp-formatted block (bold labels with
+    a small icon, blank line between each). Only the WHAT/"Market
+    Alert" line is required - IMPACT and REASON are included only when
+    Claude actually wrote them, since not every story has a meaningful
+    impact or a non-obvious reason worth a dedicated line. Returns ""
+    if even the required line is missing - relying on freeform
+    formatting to always come out right isn't safe, so a response that
+    doesn't match the expected shape falls back to the feed's own
+    description instead."""
+    parts = {}
+    for line in text.strip().splitlines():
+        line = line.strip()
+        for prefix, label, _icon in _STRUCTURED_LINE_PREFIXES:
+            if line.upper().startswith(prefix):
+                value = line[len(prefix):].strip()
+                if value:
+                    parts[label] = value
+
+    if _REQUIRED_STRUCTURED_LABEL not in parts:
+        return ""
+
+    blocks = []
+    for _prefix, label, icon in _STRUCTURED_LINE_PREFIXES:
+        if label in parts:
+            icon_str = f"{icon} " if icon else ""
+            blocks.append(f"{icon_str}*{label}:* {parts[label]}")
+
+    return "\n\n".join(blocks)
+
+
 def _ai_summary(title, context):
-    """Asks Claude for a one-sentence summary. Returns "" on any failure
-    (no API key, network error, rate limit, etc.) so callers can fall
-    back to the feed's own description - this must never break the
+    """Asks Claude for a what/impact/reason breakdown. Returns "" on
+    any failure (no API key, network error, rate limit, response that
+    doesn't match the expected format, etc.) so callers can fall back
+    to the feed's own description - this must never break the
     pipeline just because the AI call didn't work this run."""
     if not _client:
         return ""
@@ -103,28 +150,9 @@ def _ai_summary(title, context):
             }],
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
-        return text.strip()
+        return _parse_structured_summary(text)
     except Exception:
         return ""
-
-
-def _shorten_link(url):
-    """Returns a shortened URL via TinyURL (free, keyless), or the
-    original URL unchanged on any failure - a long link is a fine
-    fallback, never worth blocking an alert over."""
-    if not url:
-        return url
-    try:
-        resp = requests.get(
-            "https://tinyurl.com/api-create.php",
-            params={"url": url},
-            timeout=8,
-        )
-        resp.raise_for_status()
-        short = resp.text.strip()
-        return short if short.startswith("http") else url
-    except Exception:
-        return url
 
 
 def get_summary(entry):
@@ -153,11 +181,15 @@ def format_alert(entry, summary=None):
 
     WhatsApp auto-generates a rich preview card (image, title, the
     source's own excerpt, domain) from the link, so the message body
-    doesn't repeat a "Market Alert" label, the title as its own block,
-    or a source line - all of that is redundant with what the card
-    already shows. The body is just the analysis text (which itself
-    briefly covers what happened, as a fallback if the card doesn't
-    render) plus the link.
+    doesn't repeat the title as its own block or a source line -
+    that's redundant with what the card already shows. The body is
+    just the analysis text (which falls back to the raw title if
+    there's no summary) plus the bare link - WhatsApp can only build
+    a tappable preview card from a URL that's literally present as
+    text, so the link can't be hidden, but it's shown plainly with no
+    extra decoration around it. Uses the direct article URL, not a
+    shortener, so tapping the card or the link goes straight there
+    with no extra redirect hop.
     """
     link = entry.get("link", "").strip()
     if summary is None:
@@ -165,4 +197,4 @@ def format_alert(entry, summary=None):
 
     body = summary if summary else entry.get("title", "").strip()
 
-    return f"📰 {body}\n\n{_shorten_link(link)}"
+    return f"📰 {body}\n\n{link}"

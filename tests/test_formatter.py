@@ -6,8 +6,7 @@ formatter.py. These exercise only the deterministic, offline pieces
 regardless of whether ANTHROPIC_API_KEY is set in the environment.
 """
 
-import formatter
-from formatter import _clean_summary, _truncate, format_alert, SUMMARY_MAX_LEN
+from formatter import _clean_summary, _truncate, _parse_structured_summary, format_alert, SUMMARY_MAX_LEN
 
 
 def test_strips_html_tags_and_entities():
@@ -54,18 +53,14 @@ def test_truncate_leaves_short_text_unchanged():
 
 
 def test_truncate_cuts_long_text_at_word_boundary():
-    text = "word " * 100
+    text = "word " * 200  # comfortably longer than SUMMARY_MAX_LEN
     result = _truncate(text)
     assert len(result) <= SUMMARY_MAX_LEN + 1  # +1 for the ellipsis character
     assert result.endswith("…")
     assert not result[:-1].endswith(" ")  # trailing space stripped before ellipsis
 
 
-def test_format_alert_uses_precomputed_summary_not_title(monkeypatch):
-    # _shorten_link makes a real network call - stub it so this test
-    # stays fast, free, and deterministic like the rest of the suite.
-    monkeypatch.setattr(formatter, "_shorten_link", lambda url: url)
-
+def test_format_alert_uses_precomputed_summary_not_title():
     entry = {
         "title": "Gold price falls",
         "link": "https://example.com/a",
@@ -76,13 +71,12 @@ def test_format_alert_uses_precomputed_summary_not_title(monkeypatch):
     # WhatsApp's own preview card already shows it, so repeating it
     # here would be the exact redundancy this format is meant to avoid.
     assert "Gold fell due to a stronger dollar." in message
+    # The direct link, no shortener - avoids an extra redirect hop.
     assert "https://example.com/a" in message
     assert "Gold price falls" not in message
 
 
-def test_format_alert_falls_back_to_title_when_summary_empty(monkeypatch):
-    monkeypatch.setattr(formatter, "_shorten_link", lambda url: url)
-
+def test_format_alert_falls_back_to_title_when_summary_empty():
     entry = {
         "title": "Gold price falls",
         "link": "https://example.com/a",
@@ -95,14 +89,49 @@ def test_format_alert_falls_back_to_title_when_summary_empty(monkeypatch):
     assert message.count("\n\n") == 1
 
 
-def test_shorten_link_falls_back_to_original_on_failure(monkeypatch):
-    def _raise(*args, **kwargs):
-        raise ConnectionError("network unavailable")
+def test_parse_structured_summary_builds_labeled_block_with_icons():
+    raw = (
+        "WHAT: Oil prices rose 3% today.\n"
+        "IMPACT: Higher input costs for oil-importing economies.\n"
+        "REASON: Iran tensions are choking Strait of Hormuz shipping."
+    )
+    result = _parse_structured_summary(raw)
+    assert "*Market Alert:* Oil prices rose 3% today." in result
+    assert "💥 *Impact:* Higher input costs for oil-importing economies." in result
+    assert "💡 *Reason:* Iran tensions are choking Strait of Hormuz shipping." in result
+    # Each section on its own line, blank line between
+    assert result.count("\n\n") == 2
 
-    monkeypatch.setattr(formatter.requests, "get", _raise)
-    original = "https://example.com/some/very/long/article/path"
-    assert formatter._shorten_link(original) == original
+
+def test_parse_structured_summary_is_case_insensitive_on_prefix():
+    raw = "what: A thing happened.\nimpact: It mattered.\nreason: Because reasons."
+    result = _parse_structured_summary(raw)
+    assert "*Market Alert:* A thing happened." in result
 
 
-def test_shorten_link_returns_empty_for_empty_url():
-    assert formatter._shorten_link("") == ""
+def test_parse_structured_summary_omits_impact_and_reason_when_not_written():
+    # Impact/Reason are optional - Claude is instructed to skip them
+    # rather than pad with filler when they don't add real analysis.
+    raw = "WHAT: A minor administrative filing was made."
+    result = _parse_structured_summary(raw)
+    assert result == "*Market Alert:* A minor administrative filing was made."
+    assert "Impact" not in result
+    assert "Reason" not in result
+
+
+def test_parse_structured_summary_keeps_impact_without_reason():
+    raw = "WHAT: Oil prices rose.\nIMPACT: Costs went up for importers."
+    result = _parse_structured_summary(raw)
+    assert "*Market Alert:* Oil prices rose." in result
+    assert "💥 *Impact:* Costs went up for importers." in result
+    assert "Reason" not in result
+
+
+def test_parse_structured_summary_empty_when_required_line_missing():
+    raw = "IMPACT: Costs went up.\nREASON: Because reasons."  # no WHAT line
+    assert _parse_structured_summary(raw) == ""
+
+
+def test_parse_structured_summary_empty_on_freeform_text():
+    raw = "Oil prices rose today because of tensions in the Middle East."
+    assert _parse_structured_summary(raw) == ""
