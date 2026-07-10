@@ -282,9 +282,29 @@
   }
 
   .alert-summary {
-    margin-top: 6px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .alert-section {
     font-size: 13px;
     line-height: 1.5;
+    color: var(--muted);
+  }
+
+  .section-icon {
+    margin-right: 3px;
+  }
+
+  .section-label {
+    color: var(--text);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .section-body {
     color: var(--muted);
   }
 
@@ -363,6 +383,36 @@
     return { icon: '📰', color: 'var(--hairline)' };
   }
 
+  // AI summaries come formatted for WhatsApp - *bold* markers and
+  // inline emoji, blocks separated by a blank line (see
+  // formatter.py's _parse_structured_summary). Browsers don't render
+  // that markdown, so shown raw it's just literal asterisks cluttering
+  // the text. Parse each "<icon> *Label:* body" block into a proper
+  // labeled row instead. Falls back to plain text for summaries that
+  // aren't in this format (the cleaned-RSS-description fallback used
+  // when no AI summary was generated).
+  function renderSummary(summary) {
+    if (!summary) return '';
+
+    const blocks = summary.split('\n\n').map(b => b.trim()).filter(Boolean);
+    const parsed = blocks.map(b => {
+      const m = b.match(/^([^*]*)\*([^*]+):\*\s*([\s\S]*)$/);
+      return m ? { icon: m[1].trim(), label: m[2].trim(), body: m[3].trim() } : null;
+    });
+
+    if (parsed.length && parsed.every(Boolean)) {
+      return parsed.map(p => `
+        <div class="alert-section">
+          ${p.icon ? `<span class="section-icon" aria-hidden="true">${escapeHtml(p.icon)}</span>` : ''}
+          <span class="section-label">${escapeHtml(p.label)}:</span>
+          <span class="section-body">${escapeHtml(p.body)}</span>
+        </div>
+      `).join('');
+    }
+
+    return `<div class="alert-section"><span class="section-body">${escapeHtml(summary)}</span></div>`;
+  }
+
   function render(alerts) {
     const feed = document.getElementById('feed');
     const ticker = document.getElementById('tickerTrack');
@@ -391,7 +441,7 @@
               ${escapeHtml(a.title)}
             </a>
           </div>
-          ${a.summary ? `<div class="alert-summary">${escapeHtml(a.summary)}</div>` : ''}
+          ${a.summary ? `<div class="alert-summary">${renderSummary(a.summary)}</div>` : ''}
         </div>
       </div>
     `;
