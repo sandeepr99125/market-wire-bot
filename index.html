@@ -10,11 +10,15 @@
   :root {
     --bg: #0b0d10;
     --panel: #12151a;
+    --panel-raised: #171b21;
     --hairline: #23272e;
     --text: #d8d5ce;
     --muted: #5b6169;
     --amber: #e3a857;
     --teal: #4fa89e;
+    --rust: #c97b4a;
+    --red: #d9756b;
+    --silver-tone: #9aa3ad;
   }
 
   * { box-sizing: border-box; }
@@ -61,40 +65,49 @@
   .kpi-strip {
     background: var(--panel);
     border-bottom: 1px solid var(--hairline);
+    padding: 18px 0 20px;
+  }
+
+  .kpi-section-label {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    text-transform: uppercase;
   }
 
   .kpi-track {
-    display: flex;
-    gap: 1px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
     max-width: 760px;
     margin: 0 auto;
     padding: 0 20px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--hairline) transparent;
   }
 
-  .kpi-track::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .kpi-track::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .kpi-track::-webkit-scrollbar-thumb {
-    background: var(--hairline);
-    border-radius: 2px;
+  @media (max-width: 640px) {
+    .kpi-track { grid-template-columns: repeat(2, 1fr); }
   }
 
   .kpi-tile {
-    flex: 1 0 auto;
-    min-width: 108px;
-    padding: 10px 14px;
-    border-right: 1px solid var(--hairline);
+    background: var(--panel-raised);
+    border: 1px solid var(--hairline);
+    border-top: 2px solid var(--tile-accent, var(--hairline));
+    border-radius: 6px;
+    padding: 10px 12px;
   }
 
-  .kpi-tile:last-child { border-right: none; }
+  .kpi-icon-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .kpi-icon { font-size: 11px; line-height: 1; }
 
   .kpi-label {
     font-family: 'IBM Plex Mono', monospace;
@@ -109,7 +122,7 @@
     font-size: 15px;
     font-weight: 600;
     color: var(--text);
-    margin-top: 2px;
+    margin-top: 4px;
   }
 
   .kpi-change {
@@ -126,7 +139,7 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10px;
     color: var(--muted);
-    margin-top: 1px;
+    margin-top: 4px;
   }
 
   /* --- Header --- */
@@ -164,6 +177,13 @@
     letter-spacing: 0.05em;
   }
 
+  .subtitle {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
   .dot {
     width: 7px;
     height: 7px;
@@ -188,15 +208,30 @@
   main {
     max-width: 760px;
     margin: 0 auto;
-    padding: 8px 20px 60px;
+    padding: 16px 20px 60px;
   }
 
-  .alert-row {
+  #feed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-card {
     display: grid;
     grid-template-columns: 84px 1fr;
     gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--hairline);
+    padding: 16px 18px;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--card-accent, var(--hairline));
+    border-radius: 8px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .alert-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--amber);
   }
 
   .alert-meta {
@@ -207,9 +242,25 @@
   }
 
   .alert-meta .source {
-    display: block;
+    display: inline-block;
     color: var(--teal);
-    margin-top: 4px;
+    background: rgba(79, 168, 158, 0.12);
+    border-radius: 10px;
+    padding: 2px 7px;
+    margin-top: 6px;
+    font-size: 10px;
+  }
+
+  .alert-title {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+
+  .alert-title .cat-icon {
+    font-size: 13px;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   .alert-title a {
@@ -257,6 +308,7 @@
   </div>
 
   <div class="kpi-strip">
+    <div class="kpi-section-label">Markets</div>
     <div class="kpi-track" id="kpiTrack"></div>
   </div>
 
@@ -268,6 +320,7 @@
         <span id="lastUpdated">checking&hellip;</span>
       </div>
     </div>
+    <p class="subtitle">Macro &amp; geopolitical market alerts, curated live</p>
     <hr class="rule">
   </header>
 
@@ -292,6 +345,20 @@
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  const ALERT_CATEGORIES = [
+    { test: /gold|silver|bullion/i, icon: '🥇', color: 'var(--amber)' },
+    { test: /crude|oil|opec|brent|\bwti\b/i, icon: '🛢️', color: 'var(--rust)' },
+    { test: /war|conflict|iran|israel|russia|ukraine|sanction|tension|ceasefire|\battack\b|\bstrike\b/i, icon: '⚡', color: 'var(--red)' },
+    { test: /\bfed\b|\brbi\b|inflation|rate|\bgdp\b|\bcpi\b|\bwpi\b|jobs|employment|payroll|recession/i, icon: '🏦', color: 'var(--teal)' },
+  ];
+
+  function categorize(title) {
+    for (const cat of ALERT_CATEGORIES) {
+      if (cat.test.test(title)) return cat;
+    }
+    return { icon: '📰', color: 'var(--hairline)' };
+  }
+
   function render(alerts) {
     const feed = document.getElementById('feed');
     const ticker = document.getElementById('tickerTrack');
@@ -305,20 +372,26 @@
       return;
     }
 
-    feed.innerHTML = alerts.map(a => `
-      <div class="alert-row">
+    feed.innerHTML = alerts.map(a => {
+      const cat = categorize(a.title);
+      return `
+      <div class="alert-card" style="--card-accent:${cat.color}">
         <div class="alert-meta">
           ${formatClock(a.fetched_at)}
           <span class="source">${escapeHtml(a.source)}</span>
         </div>
-        <div class="alert-title">
-          <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener noreferrer">
-            ${escapeHtml(a.title)}
-          </a>
+        <div>
+          <div class="alert-title">
+            <span class="cat-icon" aria-hidden="true">${cat.icon}</span>
+            <a href="${escapeAttr(a.link)}" target="_blank" rel="noopener noreferrer">
+              ${escapeHtml(a.title)}
+            </a>
+          </div>
           ${a.summary ? `<div class="alert-summary">${escapeHtml(a.summary)}</div>` : ''}
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     const tickerItems = alerts.slice(0, 8)
       .map(a => `<span>${escapeHtml(a.title)} (${timeAgo(a.fetched_at)})</span>`)
@@ -326,14 +399,27 @@
     ticker.innerHTML = tickerItems + tickerItems; // duplicate for seamless loop
   }
 
-  const KPI_ORDER = ['nifty', 'sensex', 'gold', 'gold_inr_approx', 'silver', 'silver_inr_approx', 'crude', 'fii', 'dii', 'usd_inr'];
+  const KPI_META = {
+    nifty:             { icon: '📈', accent: 'var(--teal)' },
+    sensex:            { icon: '📈', accent: 'var(--teal)' },
+    gold:              { icon: '🥇', accent: 'var(--amber)' },
+    gold_inr_approx:   { icon: '🥇', accent: 'var(--amber)' },
+    silver:            { icon: '🥈', accent: 'var(--silver-tone)' },
+    silver_inr_approx: { icon: '🥈', accent: 'var(--silver-tone)' },
+    crude:             { icon: '🛢️', accent: 'var(--rust)' },
+    fii:               { icon: '🏦', accent: 'var(--teal)' },
+    dii:               { icon: '🏦', accent: 'var(--teal)' },
+    usd_inr:           { icon: '💱', accent: 'var(--teal)' },
+  };
+  const KPI_ORDER = Object.keys(KPI_META);
 
   function formatNumber(n) {
     return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
   }
 
-  function renderKpiTile(kpi) {
+  function renderKpiTile(key, kpi) {
     if (!kpi) return '';
+    const meta = KPI_META[key] || {};
 
     let valueText, changeHtml = '';
 
@@ -355,8 +441,11 @@
     }
 
     return `
-      <div class="kpi-tile">
-        <div class="kpi-label">${escapeHtml(kpi.label)}</div>
+      <div class="kpi-tile" style="--tile-accent:${meta.accent || 'var(--hairline)'}">
+        <div class="kpi-icon-label">
+          <span class="kpi-icon" aria-hidden="true">${meta.icon || ''}</span>
+          <span class="kpi-label">${escapeHtml(kpi.label)}</span>
+        </div>
         <div class="kpi-value">${escapeHtml(valueText)}</div>
         ${changeHtml}
         <div class="kpi-stale">${kpi.fetched_at ? timeAgo(kpi.fetched_at) : ''}</div>
@@ -366,7 +455,7 @@
 
   function renderKpis(kpis) {
     const track = document.getElementById('kpiTrack');
-    const tiles = KPI_ORDER.map(key => renderKpiTile(kpis[key])).filter(Boolean);
+    const tiles = KPI_ORDER.map(key => renderKpiTile(key, kpis[key])).filter(Boolean);
     track.innerHTML = tiles.length ? tiles.join('') : '';
   }
 
