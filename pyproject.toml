@@ -9,6 +9,14 @@ dependencies = [
     "anthropic>=0.40",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.uv]
 package = false
 
