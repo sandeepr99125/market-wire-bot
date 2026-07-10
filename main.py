@@ -16,10 +16,10 @@ from datetime import datetime, timezone
 
 from feed_fetcher import fetch_all_entries
 from filters import filter_entries
-from storage import load_seen, save_seen, dedupe_entries
+from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles
 from formatter import format_alert
 from poster import post_alert
-from web_output import record_alert
+from web_output import record_alert, load_alerts
 from market_data import fetch_market_kpis
 
 
@@ -37,6 +37,16 @@ def run_once():
 
     if not new_entries:
         print("No new relevant items this run.")
+        return
+
+    # Different outlets often cover the same story with the same or
+    # near-identical headline - each has its own link/id so it passes
+    # the check above, but it's still the same news.
+    recent_titles = [a.get("title", "") for a in load_alerts()]
+    new_entries = dedupe_similar_titles(new_entries, recent_titles)
+
+    if not new_entries:
+        print("No new relevant items this run (all were duplicates of recent alerts).")
         return
 
     print(f"Found {len(new_entries)} new relevant item(s):\n")

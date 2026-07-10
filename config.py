@@ -44,11 +44,15 @@ MARKET_KEYWORDS = [
 
 # Free RSS feeds - no signup, no API key needed.
 # Add/remove feeds here as you find better sources for your niche.
+#
+# financialexpress.com is deliberately absent: their /feed/ endpoint
+# returns HTTP 410 ("Feeds have been disabled") - they discontinued
+# RSS site-wide, not a transient glitch. Every other feed URL pattern
+# on their domain just serves the regular HTML page instead of XML.
 RSS_FEEDS = [
     "http://www.moneycontrol.com/rss/latestnews.xml",
     "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     "https://www.thehindubusinessline.com/markets/feeder/default.rss",
-    "https://www.financialexpress.com/market/feed/",
 ]
 
 # How far back to look on first run (in hours) - avoids flooding you
