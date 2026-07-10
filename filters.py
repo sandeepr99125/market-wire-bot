@@ -8,27 +8,125 @@ without touching how data gets fetched or posted.
 
 import re
 
-from config import WATCHLIST_NAMES, MARKET_KEYWORDS
+from config import (
+    WATCHLIST_PEOPLE,
+    WATCHLIST_INSTITUTIONS,
+    CORE_KEYWORDS,
+    SECTOR_KEYWORDS,
+    GEOPOLITICAL_KEYWORDS,
+    ECONOMIC_CONTEXT_KEYWORDS,
+)
 
-# Word-boundary matching, not plain substring - otherwise short terms
-# like "war" or "rbi" match inside unrelated words ("award", "arbitral").
-_NAME_PATTERNS = [re.compile(r"\b" + re.escape(name.lower()) + r"\b") for name in WATCHLIST_NAMES]
-_KEYWORD_PATTERNS = [re.compile(r"\b" + re.escape(kw.lower()) + r"\b") for kw in MARKET_KEYWORDS]
+
+def _patterns(words):
+    # Word-boundary matching, not plain substring - otherwise short
+    # terms like "war" or "rbi" match inside unrelated words ("award",
+    # "arbitral").
+    return [re.compile(r"\b" + re.escape(w.lower()) + r"\b") for w in words]
+
+
+_PEOPLE_PATTERNS = _patterns(WATCHLIST_PEOPLE)
+_INSTITUTION_PATTERNS = _patterns(WATCHLIST_INSTITUTIONS)
+_CORE_PATTERNS = _patterns(CORE_KEYWORDS)
+_SECTOR_PATTERNS = _patterns(SECTOR_KEYWORDS)
+_GEO_PATTERNS = _patterns(GEOPOLITICAL_KEYWORDS)
+_CONTEXT_PATTERNS = _patterns(ECONOMIC_CONTEXT_KEYWORDS)
+
+# Individual-company share-price movement, e.g. "Kalyan Jewellers
+# shares jump 9%" or "Vedanta stocks surge up to 6%" - this phrasing
+# shows up constantly on Indian financial feeds and slips past the
+# other filters because the story happens to mention a commodity/
+# keyword in passing (a jeweller mentioning gold, an oil driller
+# mentioning crude). It's single-stock noise, not the market-wide or
+# sector-wide news the bot is meant to surface.
+_MOVE_VERBS = (
+    r"jump|jumps|jumped|rally|rallies|rallied|surge|surges|surged|"
+    r"soar|soars|soared|zoom|zooms|zoomed|climb|climbs|climbed|"
+    r"slump|slumps|slumped|tumble|tumbles|tumbled|crash|crashes|crashed|"
+    r"gain|gains|gained|fall|falls|fell|rise|rises|rose|drop|drops|dropped|"
+    r"in focus"
+)
+_STOCK_MOVE_RE = re.compile(
+    r"\b(shares?|stocks?)\b[^.]{0,40}\b(" + _MOVE_VERBS + r")\b"
+    r"|\bm-cap\b",
+    re.IGNORECASE,
+)
+# ...unless the story is explicitly framed as market-wide, in which
+# case a "shares rise" turn of phrase is describing the whole index,
+# not one company.
+_BROAD_MARKET_RE = re.compile(
+    r"\b(sensex|nifty|benchmark|d-street|dalal street|broader market)\b",
+    re.IGNORECASE,
+)
+
+# Single-stock brokerage notes ("Buy call on X; target of Rs Y",
+# "Nuvama initiates Buy call on Vedanta Aluminium shares") - this was
+# the entire content of the moneycontrol feed that got dropped for
+# being stale, and it's exactly the individual stock-pick noise this
+# bot is meant to filter out, regardless of which commodity/sector
+# word the note happens to mention in passing. Always excluded - a
+# brokerage target-price call is never legitimately market-wide.
+_BROKERAGE_CALL_RE = re.compile(
+    r"\b(buy|sell|accumulate|hold|add|reduce)\s+call\b"
+    r"|\btarget (of|price)\b"
+    r"|\binitiat(e|es|ed)\s+(coverage|buy|sell)\b",
+    re.IGNORECASE,
+)
+
+# Stock-picking listicles ("Multibaggers: 13 stocks surged up to
+# 225%", "Top Gainers & Losers") - always excluded for the same
+# reason as brokerage calls.
+_LISTICLE_RE = re.compile(
+    r"\bmultibaggers?\b|\btop gainers?\b|\btop losers?\b",
+    re.IGNORECASE,
+)
+
+
+def _has_any(patterns, text):
+    return any(p.search(text) for p in patterns)
 
 
 def is_relevant(title, summary):
     """
-    An entry is relevant if it mentions a watchlist name OR a
-    macro/sector market-moving keyword. Either alone is enough -
-    both lists are deliberately curated to broad-market movers, so
-    a single hit is already a good signal (see config.py).
+    An entry is relevant if it's about something that actually moves
+    Indian markets - not just anything that happens to contain a
+    matching word. See config.py for how the keyword lists are split
+    and why:
+
+    - CORE_KEYWORDS / SECTOR_KEYWORDS / WATCHLIST_INSTITUTIONS: a hit
+      alone is enough, these are already inherently market news.
+    - WATCHLIST_PEOPLE / GEOPOLITICAL_KEYWORDS: a hit alone is NOT
+      enough - these figures and war/conflict terms generate huge
+      volumes of news with no market angle, so they only count when
+      paired with an economic-context word.
+    - Regardless of the above, a single company's share-price move
+      (see _STOCK_MOVE_RE) is excluded unless it's explicitly framed
+      as market-wide, and brokerage buy/sell calls and stock-picking
+      listicles (see _BROKERAGE_CALL_RE / _LISTICLE_RE) are always
+      excluded - individual stock picks aren't what this bot is for,
+      even when they mention a commodity or keyword in passing.
     """
     text = f"{title} {summary}".lower()
 
-    name_hit = any(p.search(text) for p in _NAME_PATTERNS)
-    keyword_hit = any(p.search(text) for p in _KEYWORD_PATTERNS)
+    core_hit = _has_any(_CORE_PATTERNS, text)
+    sector_hit = _has_any(_SECTOR_PATTERNS, text)
+    institution_hit = _has_any(_INSTITUTION_PATTERNS, text)
+    has_context = core_hit or sector_hit or _has_any(_CONTEXT_PATTERNS, text)
 
-    return name_hit or keyword_hit
+    people_hit = _has_any(_PEOPLE_PATTERNS, text) and has_context
+    geo_hit = _has_any(_GEO_PATTERNS, text) and has_context
+
+    relevant = core_hit or sector_hit or institution_hit or people_hit or geo_hit
+    if not relevant:
+        return False
+
+    if _BROKERAGE_CALL_RE.search(text) or _LISTICLE_RE.search(text):
+        return False
+
+    if not sector_hit and _STOCK_MOVE_RE.search(text) and not _BROAD_MARKET_RE.search(text):
+        return False
+
+    return True
 
 
 def filter_entries(entries):
