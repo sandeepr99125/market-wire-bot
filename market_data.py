@@ -28,6 +28,8 @@ _NSE_HEADERS = {
     "Accept": "application/json",
 }
 
+TROY_OZ_TO_GRAMS = 31.1034768
+
 
 def _fetch_yahoo_quote(ticker):
     """Returns (price, change_pct) for a Yahoo Finance ticker, or None
@@ -131,6 +133,20 @@ def fetch_market_kpis():
     usd_inr = _fetch_usd_inr()
     if usd_inr is not None:
         _set("usd_inr", {"label": "USD/INR", "value": round(usd_inr, 2)})
+
+    # Approximate India retail rate, derived from the global spot price
+    # + USD/INR fetched just now - only computed when both are fresh
+    # in this same run, so we never mix prices from different times.
+    # This will NOT match actual MCX/bullion rates exactly (import
+    # duty, GST, and dealer premium aren't reflected), hence "approx"
+    # in the label - it's a directional figure, not the local price.
+    if gold and usd_inr is not None:
+        gold_inr_per_10g = (gold[0] / TROY_OZ_TO_GRAMS) * 10 * usd_inr
+        _set("gold_inr_approx", {"label": "Gold ₹/10g (approx)", "value": round(gold_inr_per_10g)})
+
+    if silver and usd_inr is not None:
+        silver_inr_per_kg = (silver[0] / TROY_OZ_TO_GRAMS) * 1000 * usd_inr
+        _set("silver_inr_approx", {"label": "Silver ₹/kg (approx)", "value": round(silver_inr_per_kg)})
 
     fii_dii = _fetch_fii_dii()
     for key in ("fii", "dii"):
