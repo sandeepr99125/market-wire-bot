@@ -42,18 +42,29 @@ MARKET_KEYWORDS = [
     "tariff", "trade war",
 ]
 
-# Free RSS feeds - no signup, no API key needed.
+# Free RSS feeds - no signup, no API key needed. Keys are the display
+# name shown as the source on WhatsApp/the dashboard (feeds' own
+# <title> tags are often long or mangled, so we set our own).
 # Add/remove feeds here as you find better sources for your niche.
 #
-# financialexpress.com is deliberately absent: their /feed/ endpoint
-# returns HTTP 410 ("Feeds have been disabled") - they discontinued
-# RSS site-wide, not a transient glitch. Every other feed URL pattern
-# on their domain just serves the regular HTML page instead of XML.
-RSS_FEEDS = [
-    "http://www.moneycontrol.com/rss/latestnews.xml",
-    "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
-    "https://www.thehindubusinessline.com/markets/feeder/default.rss",
-]
+# Feeds deliberately absent because they're dead/blocked, not just
+# untried - re-check before re-adding:
+#   - financialexpress.com: /feed/ returns HTTP 410 ("Feeds have been
+#     disabled"), discontinued RSS site-wide.
+#   - moneycontrol.com/rss/latestnews.xml: technically responds, but
+#     frozen since April 2024 (no new entries) and was individual
+#     stock/brokerage-target calls anyway, not macro news.
+#   - business-standard.com, zeebiz.com, ndtvprofit.com,
+#     reutersagency.com: all return HTTP 403/301 with no entries
+#     (blocked or no public RSS).
+RSS_FEEDS = {
+    "Economic Times": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+    "The Hindu BusinessLine": "https://www.thehindubusinessline.com/markets/feeder/default.rss",
+    "LiveMint": "https://www.livemint.com/rss/markets",
+    "CNBC-TV18": "https://www.cnbctv18.com/commonfeeds/v1/cne/rss/market.xml",
+    "BBC Business": "http://feeds.bbci.co.uk/news/business/rss.xml",
+    "Al Jazeera": "https://www.aljazeera.com/xml/rss/all.xml",
+}
 
 # How far back to look on first run (in hours) - avoids flooding you
 # with old news the very first time you run the script.

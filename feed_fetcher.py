@@ -20,7 +20,7 @@ def fetch_all_entries():
     """
     all_entries = []
 
-    for feed_url in RSS_FEEDS:
+    for display_name, feed_url in RSS_FEEDS.items():
         try:
             parsed = feedparser.parse(feed_url)
         except Exception as e:
@@ -30,10 +30,8 @@ def fetch_all_entries():
         if parsed.bozo:
             print(f"[warn] feed may be broken: {feed_url} ({parsed.bozo_exception})")
 
-        feed_name = parsed.feed.get("title", feed_url)
-
         for entry in parsed.entries:
-            entry["source_feed"] = feed_name
+            entry["source_feed"] = display_name
             all_entries.append(entry)
 
     return all_entries
