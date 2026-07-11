@@ -3,60 +3,60 @@
     "label": "NIFTY 50",
     "value": 24206.9,
     "change_pct": 1.02,
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "sensex": {
     "label": "SENSEX",
     "value": 77569.39,
     "change_pct": 1.08,
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
     "value": 4113.7,
     "change_pct": -0.65,
     "unit": "$/oz",
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
     "value": 60.16,
     "change_pct": -0.96,
     "unit": "$/oz",
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
     "value": 76.01,
     "change_pct": -0.38,
     "unit": "$/bbl",
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
     "value": 95.34,
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "fii": {
     "label": "FII",
     "net_value_cr": 2603.72,
     "date": "10-Jul-2026",
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": 2019.68,
     "date": "10-Jul-2026",
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
     "value": 126095,
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   },
   "silver_inr_approx": {
     "label": "Silver \u20b9/kg (approx)",
     "value": 184421,
-    "fetched_at": "2026-07-11T21:31:19.601426+00:00"
+    "fetched_at": "2026-07-11T21:45:42.127139+00:00"
   }
 }
