@@ -1,62 +1,62 @@
 {
   "nifty": {
     "label": "NIFTY 50",
-    "value": 24227.3,
-    "change_pct": 0.08,
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "value": 24229.4,
+    "change_pct": 0.09,
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "sensex": {
     "label": "SENSEX",
-    "value": 77648.22,
-    "change_pct": 0.1,
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "value": 77670.53,
+    "change_pct": 0.13,
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
-    "value": 4085.8,
-    "change_pct": -0.68,
+    "value": 4083.0,
+    "change_pct": -0.75,
     "unit": "$/oz",
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
-    "value": 59.31,
-    "change_pct": -1.42,
+    "value": 59.15,
+    "change_pct": -1.7,
     "unit": "$/oz",
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
-    "value": 77.78,
-    "change_pct": 2.33,
+    "value": 77.69,
+    "change_pct": 2.21,
     "unit": "$/bbl",
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
     "value": 95.34,
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "fii": {
     "label": "FII",
     "net_value_cr": 2603.72,
     "date": "10-Jul-2026",
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": 2019.68,
     "date": "10-Jul-2026",
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
-    "value": 125240,
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "value": 125154,
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   },
   "silver_inr_approx": {
     "label": "Silver \u20b9/kg (approx)",
-    "value": 181800,
-    "fetched_at": "2026-07-13T09:01:27.680129+00:00"
+    "value": 181294,
+    "fetched_at": "2026-07-13T09:15:46.164674+00:00"
   }
 }
