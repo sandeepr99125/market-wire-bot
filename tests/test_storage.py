@@ -63,3 +63,42 @@ def test_dedupe_similar_titles_checks_against_recent_history():
     recent = ["Fed signals rate cut in September"]
     result = dedupe_similar_titles(entries, recent)
     assert result == []
+
+
+def test_dedupe_similar_titles_catches_reworded_cross_source_duplicate():
+    # Real pair from production: same underlying fact, different
+    # outlets' phrasing. Character-sequence similarity alone (0.79)
+    # falls just short of TITLE_SIMILARITY_THRESHOLD (0.82) - this
+    # only gets caught via word-containment (0.78), which is the gap
+    # this test locks in.
+    entries = [{
+        "title": "Oil edges lower, but heads for weekly gain as West Asia supply risks persist",
+        "link": "new",
+    }]
+    recent = ["Oil heads for weekly gain as Middle East supply risks persist"]
+    result = dedupe_similar_titles(entries, recent)
+    assert result == []
+
+
+def test_dedupe_similar_titles_keeps_distinct_stories_on_same_topic():
+    # Both about the US-Iran situation, but different specific facts
+    # (an IEA supply warning vs peace-talk prospects) - word overlap
+    # is low (just "iran"), so these must NOT be merged even though
+    # they'd cluster under the same alert category on the dashboard.
+    entries = [{
+        "title": "US-Iran escalation threatens oil supply recovery, warns IEA",
+        "link": "new",
+    }]
+    recent = ["US-Iran war: Will peace talks resume, and when?"]
+    result = dedupe_similar_titles(entries, recent)
+    assert len(result) == 1
+
+
+def test_dedupe_similar_titles_numeric_guard_applies_to_content_overlap_too():
+    # Same regression as test_dedupe_similar_titles_keeps_same_template_different_price,
+    # but confirms the numeric guard also protects the new
+    # word-containment signal, not just the character-sequence one.
+    entries = [{"title": "Gold futures drop to ₹1,44,911/10g", "link": "new"}]
+    recent = ["Gold futures drop to ₹1,42,300/10g"]
+    result = dedupe_similar_titles(entries, recent)
+    assert len(result) == 1
