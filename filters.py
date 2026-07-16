@@ -15,6 +15,7 @@ from config import (
     SECTOR_KEYWORDS,
     GEOPOLITICAL_KEYWORDS,
     ECONOMIC_CONTEXT_KEYWORDS,
+    NIFTY50_CONSTITUENTS,
 )
 
 
@@ -31,6 +32,7 @@ _CORE_PATTERNS = _patterns(CORE_KEYWORDS)
 _SECTOR_PATTERNS = _patterns(SECTOR_KEYWORDS)
 _GEO_PATTERNS = _patterns(GEOPOLITICAL_KEYWORDS)
 _CONTEXT_PATTERNS = _patterns(ECONOMIC_CONTEXT_KEYWORDS)
+_NIFTY50_PATTERNS = _patterns(NIFTY50_CONSTITUENTS)
 
 # Individual-company share-price movement, e.g. "Kalyan Jewellers
 # shares jump 9%" or "Vedanta stocks surge up to 6%" - this phrasing
@@ -69,7 +71,9 @@ _BROAD_MARKET_RE = re.compile(
 _BROKERAGE_CALL_RE = re.compile(
     r"\b(buy|sell|accumulate|hold|add|reduce)\s+call\b"
     r"|\btarget (of|price)\b"
-    r"|\binitiat(e|es|ed)\s+(coverage|buy|sell)\b",
+    r"|\binitiat(e|es|ed)\s+(coverage|buy|sell)\b"
+    r"|\bstocks? to (buy|sell)\b"
+    r"|\bshares? to (buy|sell)\b",
     re.IGNORECASE,
 )
 
@@ -111,6 +115,7 @@ def is_relevant(title, summary):
     core_hit = _has_any(_CORE_PATTERNS, text)
     sector_hit = _has_any(_SECTOR_PATTERNS, text)
     institution_hit = _has_any(_INSTITUTION_PATTERNS, text)
+    nifty50_hit = _has_any(_NIFTY50_PATTERNS, text)
     has_context = core_hit or sector_hit or _has_any(_CONTEXT_PATTERNS, text)
 
     people_hit = _has_any(_PEOPLE_PATTERNS, text) and has_context
@@ -123,7 +128,10 @@ def is_relevant(title, summary):
     if _BROKERAGE_CALL_RE.search(text) or _LISTICLE_RE.search(text):
         return False
 
-    if not sector_hit and _STOCK_MOVE_RE.search(text) and not _BROAD_MARKET_RE.search(text):
+    # A Nifty50 constituent's share-price move is still a market-wide
+    # talking point (unlike a random small/mid-cap), same exemption as
+    # a sector-wide hit.
+    if not (sector_hit or nifty50_hit) and _STOCK_MOVE_RE.search(text) and not _BROAD_MARKET_RE.search(text):
         return False
 
     return True

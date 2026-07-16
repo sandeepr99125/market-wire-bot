@@ -138,3 +138,73 @@ def test_target_price_call_excluded():
 def test_top_gainers_listicle_excluded():
     title = "Top Gainers & Losers on 10 July: Godrej Industries, Indian Bank, Kalyan Jewellers among top gainers"
     assert is_relevant(title, "Gold prices steady.") is False
+
+
+def test_fii_dii_flow_relevant_alone():
+    assert is_relevant("FIIs pour Rs 5,000 crore into Indian equities in June", "") is True
+
+
+def test_mutual_fund_flow_relevant_alone():
+    assert is_relevant("Equity mutual fund inflows hit record high in June: AMFI data", "") is True
+
+
+def test_capex_relevant_alone():
+    assert is_relevant("Government hikes capex allocation for railways in Budget", "") is True
+
+
+def test_pmi_relevant_alone():
+    assert is_relevant("India manufacturing PMI slips to 6-month low in June", "") is True
+
+
+def test_credit_rating_action_relevant_alone():
+    assert is_relevant("Moody's upgrades India's sovereign credit rating outlook", "") is True
+
+
+def test_bare_rupee_relevant_alone():
+    # Currency moves matter on their own, without needing an oil/Trump
+    # mention to supply "context" - a real gap found before this fix.
+    assert is_relevant("Rupee hits record low against dollar amid FII outflows", "") is True
+
+
+def test_ecb_institution_relevant_alone():
+    assert is_relevant("ECB holds rates steady, signals caution on inflation", "") is True
+
+
+def test_boj_institution_relevant_alone():
+    assert is_relevant("BoJ keeps ultra-loose policy unchanged despite yen weakness", "") is True
+
+
+def test_bare_jobs_word_no_longer_sufficient_alone():
+    # "jobs"/"employment"/"layoffs" mostly show up in single-company
+    # hiring/firing headlines in Indian financial press, not macro
+    # data releases - moved out of unconditional CORE_KEYWORDS.
+    assert is_relevant("TechCorp announces fresh round of layoffs amid restructuring", "") is False
+
+
+def test_macro_jobs_report_still_relevant():
+    assert is_relevant("US jobs report beats expectations, payrolls surge", "") is True
+
+
+def test_nifty50_constituent_stock_move_not_excluded():
+    # A Nifty50 constituent's share-price move is still a market-wide
+    # talking point, unlike a random small/mid-cap - exempted from the
+    # single-stock exclusion the same way sector-wide hits are.
+    title = "Reliance Industries shares jump 4% on strong Q1 earnings"
+    assert is_relevant(title, "Oil refining margins improved this quarter.") is True
+
+
+def test_non_nifty50_stock_move_still_excluded():
+    title = "Kalyan Jewellers shares jump 9%, extend two-day rally to over 15%"
+    assert is_relevant(title, "Gold prices have been volatile this quarter.") is False
+
+
+def test_stocks_to_buy_recommendation_excluded():
+    # Real noise: single-stock technical-analyst pick, doesn't contain
+    # "target price" or "call" so the original brokerage regex missed it.
+    title = "Stocks to buy: Nagaraj Shetti recommends LIC, RACL Geartech shares to buy in the short-term"
+    assert is_relevant(title, "Gold prices steady, oil rises.") is False
+
+
+def test_stocks_to_buy_or_sell_recommendation_excluded():
+    title = "Stocks to buy or sell: Osho Krishan of Angel One suggests buying Aarti Industries shares"
+    assert is_relevant(title, "Crude oil prices firm.") is False

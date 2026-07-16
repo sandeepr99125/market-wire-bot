@@ -25,27 +25,55 @@ WATCHLIST_INSTITUTIONS = [
     "Saudi Arabia oil minister",
     "IMF",
     "World Bank",
+    "European Central Bank",
+    "ECB",
+    "Bank of Japan",
+    "BoJ",
 ]
 
 # Direct macro/monetary/commodity/government-policy terms - matching
 # one of these alone is enough (see filters.py). NOT generic terms
 # like "stock"/"shares"/"market"/"price", which would match almost
-# any single-company stock pick or brokerage note.
+# any single-company stock pick or brokerage note. Organized to match
+# the analyst-brief category list this bot is scoped to.
 CORE_KEYWORDS = [
     # India market indices - the clearest possible "Indian market" signal
     "sensex", "nifty",
-    # Commodities
+    # Commodities (category: Commodities)
     "gold", "silver", "crude", "oil", "opec",
     "output cut", "production cut",
-    # Central bank / rates
+    # Central bank / rates (category: Rate Decisions, RBI Policy)
     "fed", "federal reserve", "interest rate", "rate hike", "rate cut",
     "rbi", "repo rate", "monetary policy", "mpc",
-    # Macro indicators
-    "inflation", "cpi", "wpi", "gdp", "recession",
-    "jobs", "employment", "unemployment", "payrolls", "layoffs",
-    # Government / fiscal policy - "government changes which impact market"
+    # Macro indicators (category: Inflation, Other Macro)
+    "inflation", "cpi", "wpi", "gdp", "recession", "pmi",
+    "purchasing managers index",
+    # Jobs data (category: Jobs Data) - deliberately compound phrases,
+    # not bare "jobs"/"employment"/"layoffs", which mostly show up in
+    # single-company hiring/firing headlines rather than macro releases
+    "unemployment", "payrolls", "non-farm payrolls", "nfp",
+    "jobs report", "jobs data", "employment data",
+    # Government / fiscal policy (category: Govt Policy)
     "union budget", "gst council", "fiscal deficit", "disinvestment",
-    # Trade policy
+    "pli scheme", "production linked incentive", "import duty", "export duty",
+    "customs duty", "subsidy", "sebi",
+    # Infrastructure / capex (category: Infra/Capex)
+    "capex", "capital expenditure", "infrastructure spending",
+    "defence budget", "railway budget",
+    # FII/DII and mutual fund flows (category: FII-DII Flows, Mutual Fund Flows)
+    # "fiis"/"diis"/"fpis" alongside the singular forms - "FIIs pour
+    # Rs X crore" is the standard plural phrasing and \bfii\b alone
+    # won't match inside "FIIs" (no word boundary before the trailing s)
+    "fii", "fiis", "dii", "diis", "fpi", "fpis", "foreign portfolio investors",
+    "mutual fund", "amfi", "sip inflows", "fund inflows", "fund outflows",
+    # Currency (category: Currency) - "rupee" alone is a strong enough
+    # signal on its own; bare "dollar" stays context-only (too generic,
+    # matches unrelated "billion dollar deal" single-stock stories)
+    "rupee", "dollar index", "dxy", "usd/inr",
+    # Credit ratings (category: Other Macro)
+    "credit rating", "sovereign rating", "rating upgrade", "rating downgrade",
+    "moody's", "s&p global", "fitch ratings",
+    # Trade policy (category: Global Policymakers/Tariffs, Govt Policy)
     "tariff", "trade war",
 ]
 
@@ -59,6 +87,26 @@ SECTOR_KEYWORDS = [
     "banking sector", "bank nifty", "psu bank", "private banks", "nbfc sector",
     "metal stocks", "metal sector", "steel sector", "aluminium prices", "copper prices", "base metals",
     "electric vehicle", "ev sales", "ev policy", "ev subsidy",
+]
+
+# Nifty50 constituents - a single-company story about one of these is
+# still a market-wide talking point (they collectively ARE the index),
+# so mentioning one exempts a headline from the single-stock-move
+# exclusion in filters.py the same way a SECTOR_KEYWORDS hit does. This
+# is a snapshot of the index, not a live feed - NSE rebalances Nifty50
+# twice a year (March/September), so re-check this list periodically.
+NIFTY50_CONSTITUENTS = [
+    "Reliance Industries", "TCS", "HDFC Bank", "ICICI Bank", "Infosys",
+    "Hindustan Unilever", "ITC", "State Bank of India", "SBI", "Bharti Airtel",
+    "Kotak Mahindra Bank", "Larsen & Toubro", "Axis Bank", "Bajaj Finance",
+    "Asian Paints", "Maruti Suzuki", "HCL Technologies", "Sun Pharma", "Titan",
+    "UltraTech Cement", "Wipro", "Nestle India", "Bajaj Finserv", "ONGC",
+    "NTPC", "Power Grid", "JSW Steel", "Tata Motors", "Tata Steel",
+    "Adani Enterprises", "Adani Ports", "IndusInd Bank", "Grasim Industries",
+    "Tech Mahindra", "Coal India", "Cipla", "Dr Reddy's", "Hindalco",
+    "Eicher Motors", "Bajaj Auto", "Britannia", "Divi's Laboratories",
+    "Apollo Hospitals", "BPCL", "Hero MotoCorp", "SBI Life", "HDFC Life",
+    "Shriram Finance", "LTIMindtree", "Mahindra & Mahindra", "Trent",
 ]
 
 # Geopolitical conflict terms - deliberately NOT sufficient alone (see
@@ -95,9 +143,12 @@ ECONOMIC_CONTEXT_KEYWORDS = [
 #   - moneycontrol.com/rss/latestnews.xml: technically responds, but
 #     frozen since April 2024 (no new entries) and was individual
 #     stock/brokerage-target calls anyway, not macro news.
-#   - business-standard.com, zeebiz.com, ndtvprofit.com,
-#     reutersagency.com: all return HTTP 403/301 with no entries
-#     (blocked or no public RSS).
+#   - business-standard.com (all 4 sections - economy/finance/markets/
+#     commodities): confirmed Akamai edge-level block (HTTP 403
+#     "Access Denied", Server: AkamaiGHost) even with a browser
+#     User-Agent - not a header issue, genuinely inaccessible.
+#   - zeebiz.com, ndtvprofit.com, reutersagency.com: HTTP 403/301 with
+#     no entries (blocked or no public RSS).
 RSS_FEEDS = {
     "Economic Times": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     "The Hindu BusinessLine": "https://www.thehindubusinessline.com/markets/feeder/default.rss",
@@ -105,6 +156,7 @@ RSS_FEEDS = {
     "CNBC-TV18": "https://www.cnbctv18.com/commonfeeds/v1/cne/rss/market.xml",
     "BBC Business": "http://feeds.bbci.co.uk/news/business/rss.xml",
     "Al Jazeera": "https://www.aljazeera.com/xml/rss/all.xml",
+    "RBI": "https://www.rbi.org.in/pressreleases_rss.xml",
 }
 
 # How far back to look on first run (in hours) - avoids flooding you
