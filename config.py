@@ -125,10 +125,19 @@ GEOPOLITICAL_KEYWORDS = [
 # generic terms like "investors"/"investment" - those are common in
 # purely personal financial-advice pieces ("retail investors losing
 # money in Tesla crash") that have nothing to do with Indian markets.
+#
+# Also deliberately excludes "market"/"markets"/"economy"/"economic"/
+# "growth" - these were removed because they're too vague to satisfy
+# the "must be able to name a specific sector or stock" rule: "Modi
+# meets business leaders to boost economic growth" mentions "growth"
+# but names no tradeable sector, so it shouldn't pass. Every word left
+# here ties to a concrete transmission mechanism instead - a currency
+# move, a specific index, or a trade-exposed sector (exporters/
+# importers/shippers).
 ECONOMIC_CONTEXT_KEYWORDS = [
-    "market", "markets", "economy", "economic", "growth", "trade",
-    "rupee", "dollar", "stocks", "sensex", "nifty", "export", "exports",
-    "import", "imports", "supply", "shipping", "prices", "price",
+    "trade", "rupee", "dollar", "stocks", "sensex", "nifty",
+    "export", "exports", "import", "imports", "supply", "shipping",
+    "prices", "price",
 ]
 
 # Free RSS feeds - no signup, no API key needed. Keys are the display

@@ -85,6 +85,21 @@ _LISTICLE_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Regulatory housekeeping against a bulk/unnamed group of small
+# entities (RBI/SEBI cancelling registrations, resolving generic
+# investor complaints) - real example that slipped through: "RBI
+# cancels Certificate of Registration of 192 NBFCs". The affected
+# party is a plural count of unnamed firms or generic "investors",
+# never one specific listed stock or tradeable sector, so it always
+# fails the "must be able to name a sector/stock" bar regardless of
+# which other keyword the headline happens to also contain.
+_UNNAMED_ENTITY_ACTION_RE = re.compile(
+    r"\b(cancels?|cancelled|revokes?|revoked|bars?|barred)\b[^.]{0,60}"
+    r"\b(registration|licen[cs]e|certificate)s?\b[^.]{0,30}\bof\s+\d+\b"
+    r"|\bresolves?\b[^.]{0,40}\b(investors?|customers?)\b[^.]{0,40}\bcomplaints?\b",
+    re.IGNORECASE,
+)
+
 
 def _has_any(patterns, text):
     return any(p.search(text) for p in patterns)
@@ -105,10 +120,12 @@ def is_relevant(title, summary):
       paired with an economic-context word.
     - Regardless of the above, a single company's share-price move
       (see _STOCK_MOVE_RE) is excluded unless it's explicitly framed
-      as market-wide, and brokerage buy/sell calls and stock-picking
-      listicles (see _BROKERAGE_CALL_RE / _LISTICLE_RE) are always
-      excluded - individual stock picks aren't what this bot is for,
-      even when they mention a commodity or keyword in passing.
+      as market-wide, and brokerage buy/sell calls, stock-picking
+      listicles, and regulatory housekeeping against a bulk/unnamed
+      group of small entities (see _BROKERAGE_CALL_RE / _LISTICLE_RE /
+      _UNNAMED_ENTITY_ACTION_RE) are always excluded - none of these
+      name a specific tradeable stock or sector, even when they
+      mention a commodity or keyword in passing.
     """
     text = f"{title} {summary}".lower()
 
@@ -125,7 +142,7 @@ def is_relevant(title, summary):
     if not relevant:
         return False
 
-    if _BROKERAGE_CALL_RE.search(text) or _LISTICLE_RE.search(text):
+    if _BROKERAGE_CALL_RE.search(text) or _LISTICLE_RE.search(text) or _UNNAMED_ENTITY_ACTION_RE.search(text):
         return False
 
     # A Nifty50 constituent's share-price move is still a market-wide

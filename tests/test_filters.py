@@ -208,3 +208,35 @@ def test_stocks_to_buy_recommendation_excluded():
 def test_stocks_to_buy_or_sell_recommendation_excluded():
     title = "Stocks to buy or sell: Osho Krishan of Angel One suggests buying Aarti Industries shares"
     assert is_relevant(title, "Crude oil prices firm.") is False
+
+
+def test_unnamed_bulk_registration_cancellation_excluded():
+    # Real item that slipped through: no specific listed stock/sector
+    # named, just a headcount of unnamed small NBFCs.
+    title = "RBI cancels Certificate of Registration of 192 NBFCs"
+    assert is_relevant(title, "") is False
+
+
+def test_generic_investor_complaint_resolution_excluded():
+    title = "SEBI resolves over 5,000 investors' complaints in June via SCORES platform"
+    assert is_relevant(title, "") is False
+
+
+def test_named_entity_registration_action_still_relevant():
+    # Contrast case: a single named, numbered action (not a plural
+    # headcount) should still pass through normally via other keywords.
+    assert is_relevant("RBI approves appointment of Rajiv Kumar as chairman of HDFC Bank", "") is True
+
+
+def test_vague_growth_context_no_longer_sufficient_for_watchlist_person():
+    # "growth" alone names no specific tradeable sector - removed from
+    # ECONOMIC_CONTEXT_KEYWORDS since it can't satisfy the "must name a
+    # sector/stock" bar.
+    title = "Narendra Modi meets business leaders to boost economic growth"
+    assert is_relevant(title, "") is False
+
+
+def test_trade_context_still_sufficient_for_watchlist_person():
+    # "trade" stays - it ties to a concrete transmission mechanism
+    # (trade-exposed sectors), unlike "growth"/"economy".
+    assert is_relevant("Donald Trump comments on trade", "") is True
