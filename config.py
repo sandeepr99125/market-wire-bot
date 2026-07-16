@@ -153,9 +153,7 @@ RSS_FEEDS = {
     "Economic Times": "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
     "The Hindu BusinessLine": "https://www.thehindubusinessline.com/markets/feeder/default.rss",
     "LiveMint": "https://www.livemint.com/rss/markets",
-    "CNBC-TV18": "https://www.cnbctv18.com/commonfeeds/v1/cne/rss/market.xml",
     "BBC Business": "http://feeds.bbci.co.uk/news/business/rss.xml",
-    "Al Jazeera": "https://www.aljazeera.com/xml/rss/all.xml",
     "RBI": "https://www.rbi.org.in/pressreleases_rss.xml",
 }
 
