@@ -5,8 +5,24 @@ name: Update market wire
 # */15 cron, especially overnight. An external cron service calls the
 # workflow_dispatch API on a real schedule instead (see project notes).
 # This also still lets you trigger it manually from the Actions tab.
+#
+# `mode` distinguishes the every-15-min real-time run (default, no
+# `inputs` needed - the existing cron-job.org job keeps working as-is)
+# from the once-daily morning/evening digest runs, which need their
+# own separate cron-job.org jobs POSTing {"ref": "main", "inputs":
+# {"mode": "morning"}} (or "evening") at the desired IST times.
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: false
+        default: "realtime"
+        type: choice
+        options:
+          - realtime
+          - morning
+          - evening
 
 # Needed so this workflow is allowed to push the updated alerts.json
 # back to the repo.
@@ -39,7 +55,7 @@ jobs:
           WAHA_API_KEY: ${{ secrets.WAHA_API_KEY }}
           WAHA_CHAT_ID: ${{ secrets.WAHA_CHAT_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: uv run main.py
+        run: uv run main.py --mode=${{ github.event.inputs.mode || 'realtime' }}
 
       - name: Commit updated data if it changed
         run: |

@@ -12,6 +12,7 @@ Dependencies are declared in pyproject.toml - uv reads that
 automatically and installs anything missing before running.
 """
 
+import argparse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
@@ -22,6 +23,7 @@ from formatter import format_alert, get_summary
 from poster import post_alert
 from web_output import record_alert, load_alerts
 from market_data import fetch_market_kpis
+from digest import build_digest
 
 MAX_SUMMARY_WORKERS = 5
 
@@ -67,5 +69,23 @@ def run_once():
         record_alert(entry, message, summary=summary)
 
 
+def run_digest(mode):
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Building {mode} digest...")
+
+    message = build_digest(mode)
+    if not message:
+        print(f"No {mode} digest - nothing in the window cleared the bar.")
+        return
+
+    post_alert(message)
+
+
 if __name__ == "__main__":
-    run_once()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", default="realtime", choices=["realtime", "morning", "evening"])
+    args = parser.parse_args()
+
+    if args.mode == "realtime":
+        run_once()
+    else:
+        run_digest(args.mode)
