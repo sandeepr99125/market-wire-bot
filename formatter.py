@@ -24,14 +24,18 @@ _AI_SYSTEM_PROMPT = (
     "the reader has already seen.\n\n"
     "Respond using EXACTLY this line format:\n"
     "WHAT: <one brief sentence on what happened>\n"
+    "SECTOR: <the sector(s) affected, plus a specific stock if one clearly "
+    "applies, in the form \"Sector\" or \"Sector — Stock\">\n"
     "IMPACT: <one sentence on the market impact>\n"
     "REASON: <one sentence on why this has that impact>\n\n"
-    "Always include the WHAT line. Only include the IMPACT line if there's "
-    "a real market impact worth noting, and only include the REASON line "
-    "if the reason isn't already obvious from WHAT/IMPACT - omit either "
-    "line entirely rather than padding it with generic filler just to "
-    "fill out the format. Each line is plain text - no quotation marks, "
-    "no restating the headline verbatim."
+    "Always include the WHAT line. Include the SECTOR line whenever you can "
+    "name a specific sector or stock - skip it only if this story genuinely "
+    "has no identifiable sector/stock angle. Only include the IMPACT line "
+    "if there's a real market impact worth noting, and only include the "
+    "REASON line if the reason isn't already obvious from WHAT/IMPACT - "
+    "omit either line entirely rather than padding it with generic filler "
+    "just to fill out the format. Each line is plain text - no quotation "
+    "marks, no restating the headline verbatim."
 )
 
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -51,6 +55,7 @@ _REQUIRED_STRUCTURED_LABEL = "Market Alert"
 # it has no separate icon here).
 _STRUCTURED_LINE_PREFIXES = (
     ("WHAT:", _REQUIRED_STRUCTURED_LABEL, None),
+    ("SECTOR:", "Sector/Stock", "📊"),
     ("IMPACT:", "Impact", "💥"),
     ("REASON:", "Reason", "💡"),
 )
@@ -100,16 +105,16 @@ def _truncate(text, limit=SUMMARY_MAX_LEN):
 
 
 def _parse_structured_summary(text):
-    """Parses the WHAT:/IMPACT:/REASON: lines Claude was asked to
-    produce into a labeled, WhatsApp-formatted block (bold labels with
-    a small icon, blank line between each). Only the WHAT/"Market
-    Alert" line is required - IMPACT and REASON are included only when
-    Claude actually wrote them, since not every story has a meaningful
-    impact or a non-obvious reason worth a dedicated line. Returns ""
-    if even the required line is missing - relying on freeform
-    formatting to always come out right isn't safe, so a response that
-    doesn't match the expected shape falls back to the feed's own
-    description instead."""
+    """Parses the WHAT:/SECTOR:/IMPACT:/REASON: lines Claude was asked
+    to produce into a labeled, WhatsApp-formatted block (bold labels
+    with a small icon, blank line between each). Only the WHAT/"Market
+    Alert" line is required - SECTOR, IMPACT, and REASON are included
+    only when Claude actually wrote them, since not every story names
+    a specific sector/stock or has a non-obvious reason worth a
+    dedicated line. Returns "" if even the required line is missing -
+    relying on freeform formatting to always come out right isn't
+    safe, so a response that doesn't match the expected shape falls
+    back to the feed's own description instead."""
     parts = {}
     for line in text.strip().splitlines():
         line = line.strip()

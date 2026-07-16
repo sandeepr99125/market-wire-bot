@@ -127,6 +127,28 @@ def test_parse_structured_summary_keeps_impact_without_reason():
     assert "Reason" not in result
 
 
+def test_parse_structured_summary_includes_sector_stock_line():
+    raw = (
+        "WHAT: RBI held the repo rate steady.\n"
+        "SECTOR: Banking — HDFC Bank\n"
+        "IMPACT: Positive for lenders' net interest margins.\n"
+        "REASON: Unchanged rates preserve current lending spreads."
+    )
+    result = _parse_structured_summary(raw)
+    assert "📊 *Sector/Stock:* Banking — HDFC Bank" in result
+    # Ordered: What, Sector, Impact, Reason
+    assert result.index("Sector/Stock") < result.index("Impact")
+    assert result.index("Impact") < result.index("Reason")
+
+
+def test_parse_structured_summary_omits_sector_when_not_written():
+    # Not every story names a specific sector/stock - SECTOR is
+    # optional the same way IMPACT/REASON are.
+    raw = "WHAT: A minor administrative filing was made."
+    result = _parse_structured_summary(raw)
+    assert "Sector" not in result
+
+
 def test_parse_structured_summary_empty_when_required_line_missing():
     raw = "IMPACT: Costs went up.\nREASON: Because reasons."  # no WHAT line
     assert _parse_structured_summary(raw) == ""
