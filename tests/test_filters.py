@@ -240,3 +240,36 @@ def test_trade_context_still_sufficient_for_watchlist_person():
     # "trade" stays - it ties to a concrete transmission mechanism
     # (trade-exposed sectors), unlike "growth"/"economy".
     assert is_relevant("Donald Trump comments on trade", "") is True
+
+
+def test_routine_rbi_money_market_operations_excluded():
+    assert is_relevant("Money Market Operations as on July 15, 2026", "") is False
+
+
+def test_routine_rbi_vrr_auction_excluded():
+    title = "RBI to conduct Overnight Variable Rate Repo (VRR) auction under LAF on July 16, 2026"
+    assert is_relevant(title, "") is False
+
+
+def test_routine_rbi_sgb_redemption_excluded():
+    title = (
+        "Premature redemption under Sovereign Gold Bond (SGB) Scheme - Redemption Price "
+        "for premature redemption of SGB 2019-20 Series-II due on July 16, 2026"
+    )
+    assert is_relevant(title, "") is False
+
+
+def test_routine_rbi_gsec_conversion_excluded():
+    assert is_relevant("Conversion/Switch of Government of India Securities", "") is False
+
+
+def test_routine_rbi_underwriting_auction_excluded():
+    title = "Underwriting Auction for sale of Government Securities for Rs 32,000 crore on July 17, 2026"
+    assert is_relevant(title, "") is False
+
+
+def test_rbi_genuine_policy_news_still_relevant():
+    # Contrast case: an actual new regulatory circular, not routine
+    # operations - must still pass.
+    title = "RBI issues draft 'Guidance on Regulatory Expectations for Data Governance'"
+    assert is_relevant(title, "") is True

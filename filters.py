@@ -100,6 +100,28 @@ _UNNAMED_ENTITY_ACTION_RE = re.compile(
     re.IGNORECASE,
 )
 
+# RBI's own press-release feed mixes genuine policy news (rate
+# decisions, new circulars, named-entity actions) in with routine
+# operational notices it publishes almost daily as standard
+# housekeeping - VRR/repo auctions, money market operations, G-Sec
+# conversions, SGB redemption prices. WATCHLIST_INSTITUTIONS lets any
+# RBI mention through unconditionally since RBI statements are
+# normally inherently market news, but these specific notices are
+# routine plumbing, not "trade on this in the next hour" material -
+# always excluded regardless of other keyword hits.
+_ROUTINE_RBI_OPS_RE = re.compile(
+    r"\bmoney market operations\b"
+    r"|\b(variable rate repo|vrr)\b[^.]{0,20}\bauction\b"
+    r"|\bunderwriting auction\b"
+    r"|\bsovereign gold bond\b[^.]{0,40}\bredemption\b"
+    r"|\bredemption price\b"
+    r"|\bconversion\s*/\s*switch\b"
+    r"|\bswitch of government (of india )?securities\b"
+    r"|\bauction of[^.]{0,20}treasury bills\b"
+    r"|\bcash management bills\b",
+    re.IGNORECASE,
+)
+
 
 def _has_any(patterns, text):
     return any(p.search(text) for p in patterns)
@@ -142,7 +164,12 @@ def is_relevant(title, summary):
     if not relevant:
         return False
 
-    if _BROKERAGE_CALL_RE.search(text) or _LISTICLE_RE.search(text) or _UNNAMED_ENTITY_ACTION_RE.search(text):
+    if (
+        _BROKERAGE_CALL_RE.search(text)
+        or _LISTICLE_RE.search(text)
+        or _UNNAMED_ENTITY_ACTION_RE.search(text)
+        or _ROUTINE_RBI_OPS_RE.search(text)
+    ):
         return False
 
     # A Nifty50 constituent's share-price move is still a market-wide

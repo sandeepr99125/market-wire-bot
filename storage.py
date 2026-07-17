@@ -11,6 +11,10 @@ import difflib
 import json
 import os
 import re
+from collections import Counter
+from datetime import datetime, timedelta, timezone
+
+from config import TOPIC_KEYWORDS, BURST_WINDOW_MINUTES, MAX_ALERTS_PER_TOPIC_PER_WINDOW
 
 SEEN_FILE = os.path.join(os.path.dirname(__file__), "seen_items.json")
 
@@ -141,5 +145,55 @@ def dedupe_similar_titles(entries, recent_titles):
             continue
         kept.append(entry)
         seen_titles.append(title)
+
+    return kept
+
+
+def _classify_topic(title, summary=""):
+    """Returns the first TOPIC_KEYWORDS bucket this text matches, or
+    None if it doesn't fall into any of them - untopicked entries are
+    never burst-capped, only ones we can actually group."""
+    text = f"{title} {summary}".lower()
+    for topic, keywords in TOPIC_KEYWORDS.items():
+        for kw in keywords:
+            if re.search(r"\b" + re.escape(kw) + r"\b", text):
+                return topic
+    return None
+
+
+def cap_topic_bursts(entries, recent_alerts, window_minutes=BURST_WINDOW_MINUTES,
+                      max_per_topic=MAX_ALERTS_PER_TOPIC_PER_WINDOW):
+    """
+    During a fast-moving story, many genuinely distinct facts about
+    the same underlying topic can each individually clear the
+    relevance filter and pass dedupe_similar_titles (they're not
+    near-duplicates of each other, just the same topic developing).
+    This caps how many alerts on one topic go out within a rolling
+    window - once the cap is hit, further same-topic entries are
+    silently dropped for the rest of the window rather than flooding
+    the channel with every incremental update. Counts against both
+    recently posted alerts (recent_alerts) and earlier entries in
+    this same batch, so the cap applies within a single run too.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=window_minutes)
+
+    topic_counts = Counter()
+    for alert in recent_alerts:
+        fetched_at = datetime.fromisoformat(alert["fetched_at"])
+        if fetched_at >= cutoff:
+            topic = _classify_topic(alert.get("title", ""), alert.get("summary", ""))
+            if topic:
+                topic_counts[topic] += 1
+
+    kept = []
+    for entry in entries:
+        topic = _classify_topic(entry.get("title", ""), entry.get("summary", ""))
+        if topic is None:
+            kept.append(entry)
+            continue
+        if topic_counts[topic] >= max_per_topic:
+            continue
+        topic_counts[topic] += 1
+        kept.append(entry)
 
     return kept

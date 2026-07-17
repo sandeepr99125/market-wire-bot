@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 
 from feed_fetcher import fetch_all_entries
 from filters import filter_entries
-from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles
+from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles, cap_topic_bursts
 from formatter import format_alert, get_summary
 from poster import post_alert
 from web_output import record_alert, load_alerts
@@ -47,11 +47,22 @@ def run_once():
     # Different outlets often cover the same story with the same or
     # near-identical headline - each has its own link/id so it passes
     # the check above, but it's still the same news.
-    recent_titles = [a.get("title", "") for a in load_alerts()]
+    recent_alerts = load_alerts()
+    recent_titles = [a.get("title", "") for a in recent_alerts]
     new_entries = dedupe_similar_titles(new_entries, recent_titles)
 
     if not new_entries:
         print("No new relevant items this run (all were duplicates of recent alerts).")
+        return
+
+    # A fast-moving story can produce several genuinely distinct facts
+    # in one window, each clearing the relevance filter on its own -
+    # cap how many alerts on one topic go out per hour so the channel
+    # doesn't get flooded during a breaking-news cluster.
+    new_entries = cap_topic_bursts(new_entries, recent_alerts)
+
+    if not new_entries:
+        print("No new relevant items this run (burst cap reached for all remaining topics).")
         return
 
     print(f"Found {len(new_entries)} new relevant item(s):\n")
