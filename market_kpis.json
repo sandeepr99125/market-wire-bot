@@ -41,13 +41,13 @@
     "label": "FII",
     "net_value_cr": -376.41,
     "date": "17-Jul-2026",
-    "fetched_at": "2026-07-19T23:01:00.109712+00:00"
+    "fetched_at": "2026-07-20T02:53:18.337020+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": 1017.89,
     "date": "17-Jul-2026",
-    "fetched_at": "2026-07-19T23:01:00.109712+00:00"
+    "fetched_at": "2026-07-20T02:53:18.337020+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
