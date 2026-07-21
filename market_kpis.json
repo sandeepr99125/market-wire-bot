@@ -3,34 +3,34 @@
     "label": "NIFTY 50",
     "value": 24187.7,
     "change_pct": -0.21,
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "sensex": {
     "label": "SENSEX",
     "value": 77470.11,
     "change_pct": -0.31,
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
-    "value": 4072.4,
-    "change_pct": 1.41,
+    "value": 4077.2,
+    "change_pct": 1.53,
     "unit": "$/oz",
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
-    "value": 59.03,
-    "change_pct": 3.43,
+    "value": 59.12,
+    "change_pct": 3.58,
     "unit": "$/oz",
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
-    "value": 90.88,
-    "change_pct": 1.86,
+    "value": 90.93,
+    "change_pct": 1.92,
     "unit": "$/bbl",
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
@@ -41,13 +41,13 @@
     "label": "FII",
     "net_value_cr": 1650.16,
     "date": "21-Jul-2026",
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": -656.88,
     "date": "21-Jul-2026",
-    "fetched_at": "2026-07-21T18:15:34.217481+00:00"
+    "fetched_at": "2026-07-21T18:30:44.742150+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
