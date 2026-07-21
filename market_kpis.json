@@ -3,60 +3,60 @@
     "label": "NIFTY 50",
     "value": 24187.7,
     "change_pct": -0.21,
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "sensex": {
     "label": "SENSEX",
     "value": 77470.11,
     "change_pct": -0.31,
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
     "value": 4082.2,
     "change_pct": 1.65,
     "unit": "$/oz",
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
     "value": 59.07,
     "change_pct": 3.5,
     "unit": "$/oz",
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
     "value": 91.44,
     "change_pct": 2.49,
     "unit": "$/bbl",
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
     "value": 96.23,
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "fii": {
     "label": "FII",
     "net_value_cr": 1650.16,
     "date": "21-Jul-2026",
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": -656.88,
     "date": "21-Jul-2026",
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
     "value": 126298,
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   },
   "silver_inr_approx": {
     "label": "Silver \u20b9/kg (approx)",
     "value": 182755,
-    "fetched_at": "2026-07-21T21:30:46.330199+00:00"
+    "fetched_at": "2026-07-21T21:45:33.283624+00:00"
   }
 }
