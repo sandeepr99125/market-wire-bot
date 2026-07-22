@@ -34,6 +34,22 @@ def test_evening_window_starts_at_todays_market_open():
     assert start == datetime(2026, 7, 14, 3, 45, tzinfo=timezone.utc)  # 09:15 IST
 
 
+def test_hourly_window_is_a_simple_rolling_hour():
+    # Not tied to market open/close at all, unlike morning/evening -
+    # just now minus 60 minutes, any day, any time.
+    now_utc = datetime(2026, 7, 14, 11, 0, tzinfo=timezone.utc)
+    start = digest_window_start("hourly", now_utc)
+    assert start == datetime(2026, 7, 14, 10, 0, tzinfo=timezone.utc)
+
+
+def test_hourly_window_works_on_a_weekend_unlike_morning_evening():
+    # Sunday - morning/evening's weekend-aware logic doesn't apply
+    # here, hourly just looks back exactly 60 minutes regardless.
+    now_utc = datetime(2026, 7, 19, 8, 0, tzinfo=timezone.utc)  # Sunday
+    start = digest_window_start("hourly", now_utc)
+    assert start == datetime(2026, 7, 19, 7, 0, tzinfo=timezone.utc)
+
+
 def test_parse_digest_builds_labeled_block_for_morning():
     raw = (
         "GLOBAL: US markets closed higher on rate-cut hopes; Asia trading mixed.\n"
@@ -75,3 +91,23 @@ def test_parse_digest_handles_multi_sentence_sections_without_bleeding():
 
 def test_parse_digest_returns_empty_when_no_sections_found():
     assert _parse_digest("Nothing structured here.", "morning") == ""
+
+
+def test_parse_digest_builds_labeled_block_for_hourly():
+    raw = (
+        "HEADLINE: RBI held the repo rate steady at 6.5%.\n"
+        "UPDATES: Rupee slipped 12 paise on dollar strength; crude edged "
+        "up 1% on West Asia tensions.\n"
+        "WATCH: US CPI print due tonight."
+    )
+    result = _parse_digest(raw, "hourly")
+    assert "⚡ *This Hour:* RBI held the repo rate steady at 6.5%." in result
+    assert "📰 *Updates:* Rupee slipped 12 paise" in result
+    assert "👀 *Watch:* US CPI print due tonight." in result
+
+
+def test_parse_digest_hourly_omits_headline_when_nothing_dominant():
+    raw = "UPDATES: A handful of minor sector updates, nothing dominant this hour."
+    result = _parse_digest(raw, "hourly")
+    assert result == "📰 *Updates:* A handful of minor sector updates, nothing dominant this hour."
+    assert "This Hour" not in result

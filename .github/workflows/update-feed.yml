@@ -7,10 +7,13 @@ name: Update market wire
 # This also still lets you trigger it manually from the Actions tab.
 #
 # `mode` distinguishes the every-15-min real-time run (default, no
-# `inputs` needed - the existing cron-job.org job keeps working as-is)
-# from the once-daily morning/evening digest runs, which need their
-# own separate cron-job.org jobs POSTing {"ref": "main", "inputs":
-# {"mode": "morning"}} (or "evening") at the desired IST times.
+# `inputs` needed - the existing cron-job.org job keeps working as-is;
+# this mode only fetches/filters/records to the dashboard, it no
+# longer posts to WhatsApp - see main.py) from the digest runs, which
+# need their own separate cron-job.org jobs POSTing {"ref": "main",
+# "inputs": {"mode": "hourly"}} (or "morning"/"evening") at the
+# desired times. "hourly" is the one that actually reaches WhatsApp
+# for routine updates - see digest.py.
 on:
   workflow_dispatch:
     inputs:
@@ -21,6 +24,7 @@ on:
         type: choice
         options:
           - realtime
+          - hourly
           - morning
           - evening
 

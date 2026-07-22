@@ -7,9 +7,7 @@ across different days/prices, so a naive threshold would have wrongly
 suppressed legitimate new price updates.
 """
 
-from datetime import datetime, timedelta, timezone
-
-from storage import dedupe_entries, dedupe_similar_titles, cap_topic_bursts, MAX_ALERTS_PER_TOPIC_PER_WINDOW
+from storage import dedupe_entries, dedupe_similar_titles
 
 
 def test_dedupe_entries_filters_already_seen():
@@ -103,61 +101,4 @@ def test_dedupe_similar_titles_numeric_guard_applies_to_content_overlap_too():
     entries = [{"title": "Gold futures drop to ₹1,44,911/10g", "link": "new"}]
     recent = ["Gold futures drop to ₹1,42,300/10g"]
     result = dedupe_similar_titles(entries, recent)
-    assert len(result) == 1
-
-
-def _alert(title, minutes_ago):
-    return {
-        "title": title,
-        "summary": "",
-        "fetched_at": (datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)).isoformat(),
-    }
-
-
-def test_cap_topic_bursts_drops_once_topic_cap_reached():
-    # MAX_ALERTS_PER_TOPIC_PER_WINDOW gold alerts already posted
-    # recently - one more gold entry should be dropped.
-    recent = [_alert(f"Gold futures move to Rs {i}/10g", minutes_ago=10) for i in range(MAX_ALERTS_PER_TOPIC_PER_WINDOW)]
-    entries = [{"title": "Gold prices edge higher on safe-haven demand", "link": "new"}]
-    result = cap_topic_bursts(entries, recent)
-    assert result == []
-
-
-def test_cap_topic_bursts_keeps_entry_under_the_cap():
-    recent = [_alert("Gold futures move to Rs 1/10g", minutes_ago=10)]  # only 1, cap not reached
-    entries = [{"title": "Gold prices edge higher on safe-haven demand", "link": "new"}]
-    result = cap_topic_bursts(entries, recent)
-    assert len(result) == 1
-
-
-def test_cap_topic_bursts_ignores_alerts_outside_the_window():
-    # These are old enough to be outside BURST_WINDOW_MINUTES, so they
-    # shouldn't count toward the cap.
-    recent = [_alert(f"Gold futures move to Rs {i}/10g", minutes_ago=120) for i in range(MAX_ALERTS_PER_TOPIC_PER_WINDOW)]
-    entries = [{"title": "Gold prices edge higher on safe-haven demand", "link": "new"}]
-    result = cap_topic_bursts(entries, recent)
-    assert len(result) == 1
-
-
-def test_cap_topic_bursts_does_not_cross_contaminate_different_topics():
-    # A burst of gold alerts shouldn't cap an unrelated crude oil entry.
-    recent = [_alert(f"Gold futures move to Rs {i}/10g", minutes_ago=10) for i in range(MAX_ALERTS_PER_TOPIC_PER_WINDOW)]
-    entries = [{"title": "Crude oil rises on supply concerns", "link": "new"}]
-    result = cap_topic_bursts(entries, recent)
-    assert len(result) == 1
-
-
-def test_cap_topic_bursts_applies_within_a_single_batch_too():
-    # No recent history, but the batch itself contains more same-topic
-    # entries than the cap allows - later ones in the batch should
-    # still be dropped once the running count hits the cap.
-    entries = [{"title": f"Gold prices move to Rs {i}/10g on demand", "link": str(i)} for i in range(MAX_ALERTS_PER_TOPIC_PER_WINDOW + 2)]
-    result = cap_topic_bursts(entries, recent_alerts=[])
-    assert len(result) == MAX_ALERTS_PER_TOPIC_PER_WINDOW
-
-
-def test_cap_topic_bursts_never_caps_untopicked_entries():
-    recent = [_alert(f"Gold futures move to Rs {i}/10g", minutes_ago=10) for i in range(MAX_ALERTS_PER_TOPIC_PER_WINDOW)]
-    entries = [{"title": "Union Budget hikes GST council allocation for infrastructure", "link": "new"}]
-    result = cap_topic_bursts(entries, recent)
     assert len(result) == 1

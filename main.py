@@ -1,11 +1,20 @@
 """
 Orchestrator: wires the pipeline together.
 
-    feed_fetcher  -> filters  -> storage (dedupe) -> formatter -> poster
+    feed_fetcher -> filters -> storage (dedupe) -> formatter -> web_output
 
 Each step lives in its own file (see the module list below). This
 file just calls them in order - it shouldn't contain any actual
 fetching/filtering/formatting logic itself.
+
+run_once() (--mode=realtime, the default) no longer posts to WhatsApp
+directly - it only fetches, filters, dedupes, and records each item to
+the dashboard (alerts.json). Readers were getting one WhatsApp message
+per item and it was too much volume to actually read. WhatsApp
+delivery now happens exclusively through digest.py's hourly/morning/
+evening consolidated updates (see run_digest()), which read back
+what's been recorded here and synthesize it into one message instead
+of one-per-item.
 
 Run with: uv run main.py
 Dependencies are declared in pyproject.toml - uv reads that
@@ -18,7 +27,7 @@ from datetime import datetime, timezone
 
 from feed_fetcher import fetch_all_entries
 from filters import filter_entries
-from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles, cap_topic_bursts
+from storage import load_seen, save_seen, dedupe_entries, dedupe_similar_titles
 from formatter import format_alert, get_summary
 from poster import post_alert
 from web_output import record_alert, load_alerts
@@ -47,36 +56,23 @@ def run_once():
     # Different outlets often cover the same story with the same or
     # near-identical headline - each has its own link/id so it passes
     # the check above, but it's still the same news.
-    recent_alerts = load_alerts()
-    recent_titles = [a.get("title", "") for a in recent_alerts]
+    recent_titles = [a.get("title", "") for a in load_alerts()]
     new_entries = dedupe_similar_titles(new_entries, recent_titles)
 
     if not new_entries:
         print("No new relevant items this run (all were duplicates of recent alerts).")
         return
 
-    # A fast-moving story can produce several genuinely distinct facts
-    # in one window, each clearing the relevance filter on its own -
-    # cap how many alerts on one topic go out per hour so the channel
-    # doesn't get flooded during a breaking-news cluster.
-    new_entries = cap_topic_bursts(new_entries, recent_alerts)
-
-    if not new_entries:
-        print("No new relevant items this run (burst cap reached for all remaining topics).")
-        return
-
     print(f"Found {len(new_entries)} new relevant item(s):\n")
 
     # Each summary is an independent network call (feed cleanup or a
     # Claude API request) - fetch them concurrently instead of one at
-    # a time, then reuse the same result for both the posted message
-    # and the dashboard record instead of computing it twice.
+    # a time.
     with ThreadPoolExecutor(max_workers=MAX_SUMMARY_WORKERS) as executor:
         summaries = list(executor.map(get_summary, new_entries))
 
     for entry, summary in zip(new_entries, summaries):
         message = format_alert(entry, summary=summary)
-        post_alert(message)
         record_alert(entry, message, summary=summary)
 
 
@@ -93,7 +89,7 @@ def run_digest(mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", default="realtime", choices=["realtime", "morning", "evening"])
+    parser.add_argument("--mode", default="realtime", choices=["realtime", "hourly", "morning", "evening"])
     args = parser.parse_args()
 
     if args.mode == "realtime":

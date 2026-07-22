@@ -1,10 +1,13 @@
 """
 Digest layer: builds the once-daily morning (pre-market) and evening
-(post-market) briefings, on top of the same per-item real-time alert
-pipeline (feed_fetcher/filters/formatter). Unlike a real-time alert,
-a digest looks at a whole time window at once and asks Claude to
-synthesize a single prioritized briefing from it, rather than posting
-one message per item.
+(post-market) briefings, plus the rolling hourly consolidated update,
+on top of the same real-time collection pipeline (feed_fetcher/
+filters/formatter). A digest looks at a whole time window at once and
+asks Claude to synthesize a single prioritized message from it, rather
+than posting one message per item - the hourly mode is what
+main.run_once() now relies on for actually reaching WhatsApp, since
+individual items are recorded to the dashboard but no longer posted
+one-by-one (see main.py).
 """
 
 import re
@@ -84,6 +87,24 @@ _EVENING_SYSTEM_PROMPT = (
     "could set tomorrow's tone, if known from the source items>\n\n" + _SHARED_RULES
 )
 
+_HOURLY_SYSTEM_PROMPT = (
+    "You are a macro markets analyst preparing a rolling hourly WhatsApp "
+    "update for Indian equity investors, covering roughly the last hour. "
+    "Readers were previously getting one message per news item and it was "
+    "too much noise to actually read - your job is to make sure nothing "
+    "material gets missed, without spamming a separate message per item. "
+    "Synthesize everything into one concise, readable update rather than "
+    "listing items as disconnected facts.\n\n"
+    "Respond using EXACTLY this line format:\n"
+    "HEADLINE: <if one story clearly dominated the hour, name it in one "
+    "line - omit this line entirely if nothing was dominant>\n"
+    "UPDATES: <everything else material from the last hour, synthesized "
+    "into a few sentences - group related items together and prioritize "
+    "by impact rather than just listing headlines in order>\n"
+    "WATCH: <anything scheduled or imminent worth flagging - omit if "
+    "nothing specific>\n\n" + _SHARED_RULES
+)
+
 # (prefix, display label, icon)
 _DIGEST_SECTIONS = {
     "morning": (
@@ -98,11 +119,23 @@ _DIGEST_SECTIONS = {
         ("COMMODITIES:", "Commodities & Currency", "🛢️"),
         ("WATCH:", "Overnight Watch", "🌙"),
     ),
+    "hourly": (
+        ("HEADLINE:", "This Hour", "⚡"),
+        ("UPDATES:", "Updates", "📰"),
+        ("WATCH:", "Watch", "👀"),
+    ),
 }
 
 _DIGEST_HEADING = {
     "morning": "🌅 *Morning Briefing*",
     "evening": "🌆 *Evening Wrap*",
+    "hourly": "🕐 *Hourly Update*",
+}
+
+_SYSTEM_PROMPTS = {
+    "morning": _MORNING_SYSTEM_PROMPT,
+    "evening": _EVENING_SYSTEM_PROMPT,
+    "hourly": _HOURLY_SYSTEM_PROMPT,
 }
 
 MAX_BATCH_ITEMS = 120
@@ -117,9 +150,19 @@ def _previous_trading_day(d):
     return d
 
 
+HOURLY_WINDOW_MINUTES = 60
+
+
 def digest_window_start(mode, now_utc=None):
     """Returns the UTC datetime the digest should look back to."""
     now_utc = now_utc or datetime.now(timezone.utc)
+
+    if mode == "hourly":
+        # A simple rolling window, not tied to market open/close - the
+        # hourly digest runs throughout the active window (see the
+        # cron-job.org schedule), not just around market hours.
+        return now_utc - timedelta(minutes=HOURLY_WINDOW_MINUTES)
+
     now_ist = now_utc.astimezone(IST)
 
     if mode == "morning":
@@ -216,7 +259,7 @@ def _ai_digest(mode, items):
         response = _client.messages.create(
             model=ANTHROPIC_MODEL,
             max_tokens=900,
-            system=_MORNING_SYSTEM_PROMPT if mode == "morning" else _EVENING_SYSTEM_PROMPT,
+            system=_SYSTEM_PROMPTS[mode],
             messages=[{"role": "user", "content": f"RSS batch ({len(items)} items):\n{listing}"}],
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
@@ -229,8 +272,9 @@ def _ai_digest(mode, items):
 
 def build_digest(mode):
     """Returns the formatted WhatsApp message for the given mode
-    ("morning" or "evening"), or None if there's nothing to send
-    (no API key configured, or nothing in the window cleared the bar)."""
+    ("morning", "evening", or "hourly"), or None if there's nothing to
+    send (no API key configured, or nothing in the window cleared the
+    bar)."""
     window_start_utc = digest_window_start(mode)
     items = _gather_batch(mode, window_start_utc)
     body = _ai_digest(mode, items)

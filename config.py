@@ -169,31 +169,3 @@ RSS_FEEDS = {
 # How far back to look on first run (in hours) - avoids flooding you
 # with old news the very first time you run the script.
 INITIAL_LOOKBACK_HOURS = 6
-
-# Coarse topic buckets used only for burst-capping (see storage.py
-# cap_topic_bursts) - NOT for relevance decisions, which filters.py
-# already handles independently. During a fast-moving story (an
-# escalating conflict, a big rate move), many genuinely distinct facts
-# about the same underlying topic can each individually clear the
-# relevance bar - this groups them so only the first few per topic get
-# sent within a rolling window, instead of every single update.
-TOPIC_KEYWORDS = {
-    "Gold/Silver": ["gold", "silver", "bullion"],
-    "Crude/Oil": ["crude", "oil", "opec", "brent", "wti"],
-    "Metals": ["metal", "steel", "aluminium", "copper"],
-    "Geopolitics": [
-        "war", "conflict", "iran", "israel", "russia", "ukraine",
-        "sanctions", "ceasefire", "tension", "attack", "strike",
-    ],
-    "Rates/RBI/Fed": [
-        "rbi", "fed", "federal reserve", "repo rate", "interest rate",
-        "mpc", "monetary policy", "rate hike", "rate cut", "ecb", "boj",
-    ],
-    "Currency": ["rupee", "dollar index", "dxy", "usd/inr"],
-    "FII/DII/MF Flows": ["fii", "fiis", "dii", "diis", "fpi", "fpis", "mutual fund", "amfi"],
-    "Banking": ["banking sector", "bank nifty", "psu bank", "private banks", "nbfc"],
-    "Sensex/Nifty": ["sensex", "nifty"],
-}
-
-BURST_WINDOW_MINUTES = 60
-MAX_ALERTS_PER_TOPIC_PER_WINDOW = 3
