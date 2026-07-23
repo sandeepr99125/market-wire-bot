@@ -30,6 +30,22 @@ _NSE_HEADERS = {
 
 TROY_OZ_TO_GRAMS = 31.1034768
 
+# NSE sector indices, all confirmed live on Yahoo Finance's unofficial
+# endpoint (same source as the other indices here) - one ticker
+# (^CNXFINANCE, "Nifty Financial Services") was tried and dropped:
+# Yahoo returns "No data found, symbol may be delisted" for it.
+SECTOR_INDICES = {
+    "sector_bank": ("Bank", "%5ENSEBANK"),
+    "sector_it": ("IT", "%5ECNXIT"),
+    "sector_metal": ("Metal", "%5ECNXMETAL"),
+    "sector_auto": ("Auto", "%5ECNXAUTO"),
+    "sector_pharma": ("Pharma", "%5ECNXPHARMA"),
+    "sector_fmcg": ("FMCG", "%5ECNXFMCG"),
+    "sector_energy": ("Energy", "%5ECNXENERGY"),
+    "sector_realty": ("Realty", "%5ECNXREALTY"),
+    "sector_psu_bank": ("PSU Bank", "%5ECNXPSUBANK"),
+}
+
 
 def _fetch_yahoo_quote(ticker):
     """Returns (price, change_pct) for a Yahoo Finance ticker, or None
@@ -89,7 +105,10 @@ def _fetch_fii_dii():
         return {}
 
 
-def _load_existing():
+def load_kpis():
+    """Returns whatever's currently in market_kpis.json - used both to
+    merge over on the next fetch, and by digest.py to pull the latest
+    sector snapshot into the digest prompt."""
     if os.path.exists(KPI_FILE):
         try:
             with open(KPI_FILE, "r") as f:
@@ -104,7 +123,7 @@ def fetch_market_kpis():
     over whatever was there before - a failed fetch this run keeps
     the previous value (with its own fetched_at) instead of going
     blank. Returns the merged dict."""
-    kpis = _load_existing()
+    kpis = load_kpis()
     now = datetime.now(timezone.utc).isoformat()
 
     def _set(key, fields):
@@ -152,6 +171,11 @@ def fetch_market_kpis():
     for key in ("fii", "dii"):
         if key in fii_dii:
             _set(key, {"label": key.upper(), **fii_dii[key]})
+
+    for key, (label, ticker) in SECTOR_INDICES.items():
+        quote = _fetch_yahoo_quote(ticker)
+        if quote:
+            _set(key, {"label": f"Nifty {label}", "value": round(quote[0], 2), "change_pct": _round_or_none(quote[1])})
 
     with open(KPI_FILE, "w") as f:
         json.dump(kpis, f, indent=2)

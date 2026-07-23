@@ -9,7 +9,8 @@ API key and its failure mode (return "") is already the safe default.
 
 from datetime import datetime, timezone
 
-from digest import digest_window_start, _parse_digest
+import digest
+from digest import digest_window_start, _parse_digest, _sector_snapshot_text
 
 
 def test_morning_window_looks_back_to_previous_days_close():
@@ -111,3 +112,28 @@ def test_parse_digest_hourly_omits_headline_when_nothing_dominant():
     result = _parse_digest(raw, "hourly")
     assert result == "📰 *Updates:* A handful of minor sector updates, nothing dominant this hour."
     assert "This Hour" not in result
+
+
+def test_parse_digest_includes_sectors_section_for_all_modes():
+    for mode, prefix in (("morning", "GLOBAL"), ("evening", "SECTORS"), ("hourly", "HEADLINE")):
+        raw = f"{prefix}: placeholder.\nSECTORS: Bank -0.9% on rate-hike fears; IT flat."
+        result = _parse_digest(raw, mode)
+        assert "📊 *Sector Watch:* Bank -0.9% on rate-hike fears; IT flat." in result
+
+
+def test_sector_snapshot_text_formats_real_data(monkeypatch):
+    fake_kpis = {
+        "sector_bank": {"label": "Nifty Bank", "value": 56592.0, "change_pct": -0.94},
+        "sector_it": {"label": "Nifty IT", "value": 28533.55, "change_pct": 0.06},
+        "sector_metal": {"label": "Nifty Metal", "value": 12469.7, "change_pct": None},  # no change yet
+    }
+    monkeypatch.setattr(digest, "load_kpis", lambda: fake_kpis)
+    text = _sector_snapshot_text()
+    assert "Bank -0.94%" in text
+    assert "IT +0.06%" in text
+    assert "Metal" not in text  # no change_pct available, skipped rather than showing "None%"
+
+
+def test_sector_snapshot_text_empty_when_no_kpi_data(monkeypatch):
+    monkeypatch.setattr(digest, "load_kpis", lambda: {})
+    assert _sector_snapshot_text() == ""

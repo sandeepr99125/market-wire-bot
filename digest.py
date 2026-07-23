@@ -15,6 +15,7 @@ from datetime import datetime, time, timedelta, timezone
 
 from feed_fetcher import fetch_all_entries
 from formatter import _client, ANTHROPIC_MODEL, _clean_summary
+from market_data import load_kpis, SECTOR_INDICES
 from storage import dedupe_similar_titles
 from web_output import load_alerts
 
@@ -48,6 +49,18 @@ _SHARED_RULES = (
     "NOTHING"
 )
 
+_SECTOR_INSTRUCTION = (
+    "You'll be given the actual current % move for each major Nifty "
+    "sector index (Bank, IT, Metal, Auto, Pharma, FMCG, Energy, Realty, "
+    "PSU Bank) - use those real numbers, don't estimate or invent your "
+    "own. For each sector that moved meaningfully, explain what's "
+    "driving it using the news batch (a specific policy move, a "
+    "commodity swing, an earnings theme, global cues) - don't just "
+    "restate the number with no reason. Sectors with a small/flat move "
+    "and no clear driver in the batch can be grouped together briefly "
+    "or left out rather than forced into an explanation."
+)
+
 _MORNING_SYSTEM_PROMPT = (
     "You are a macro markets analyst preparing the pre-market WhatsApp "
     "briefing for Indian equity investors, covering the window from "
@@ -58,6 +71,7 @@ _MORNING_SYSTEM_PROMPT = (
     "GLOBAL: <how US markets closed, how Asia is trading, and the "
     "gap-up/gap-down bias for India's open - only if there's a clear "
     "signal>\n"
+    "SECTORS: <how each major sector is set to perform and why - " + _SECTOR_INSTRUCTION + ">\n"
     "CATALYSTS: <key overnight catalysts - policy, FII/DII data, "
     "geopolitics, policymaker statements, inflation/jobs data, rate "
     "decisions - with reasoning, impact, and sectors/stocks affected>\n"
@@ -74,6 +88,7 @@ _EVENING_SYSTEM_PROMPT = (
     "them and which sectors/stocks were affected, and flag what to watch "
     "overnight/tomorrow.\n\n"
     "Respond using EXACTLY this line format:\n"
+    "SECTORS: <how each major sector performed today and why - " + _SECTOR_INSTRUCTION + ">\n"
     "CATALYSTS: <today's real catalysts - policy moves, FII/DII data, "
     "mutual fund flow data, geopolitics, policymaker statements, "
     "inflation/jobs data, rate decisions - with reasoning, impact, and "
@@ -98,6 +113,10 @@ _HOURLY_SYSTEM_PROMPT = (
     "Respond using EXACTLY this line format:\n"
     "HEADLINE: <if one story clearly dominated the hour, name it in one "
     "line - omit this line entirely if nothing was dominant>\n"
+    "SECTORS: <brief sector performance snapshot with drivers, only for "
+    "sectors that moved meaningfully or had sector-specific news this "
+    "hour - " + _SECTOR_INSTRUCTION + " Omit this line entirely if "
+    "nothing sector-specific happened this hour>\n"
     "UPDATES: <everything else material from the last hour, synthesized "
     "into a few sentences - group related items together and prioritize "
     "by impact rather than just listing headlines in order>\n"
@@ -109,11 +128,13 @@ _HOURLY_SYSTEM_PROMPT = (
 _DIGEST_SECTIONS = {
     "morning": (
         ("GLOBAL:", "Global Markets Overnight", "🌏"),
+        ("SECTORS:", "Sector Watch", "📊"),
         ("CATALYSTS:", "Key Overnight Catalysts", "📰"),
         ("COMMODITIES:", "Commodities & Currency", "🛢️"),
         ("WATCH:", "Watch Today", "👀"),
     ),
     "evening": (
+        ("SECTORS:", "Sector Watch", "📊"),
         ("CATALYSTS:", "Day's Key Catalysts", "📰"),
         ("FLOWS:", "FII/DII Snapshot", "🏦"),
         ("COMMODITIES:", "Commodities & Currency", "🛢️"),
@@ -121,6 +142,7 @@ _DIGEST_SECTIONS = {
     ),
     "hourly": (
         ("HEADLINE:", "This Hour", "⚡"),
+        ("SECTORS:", "Sector Watch", "📊"),
         ("UPDATES:", "Updates", "📰"),
         ("WATCH:", "Watch", "👀"),
     ),
@@ -246,6 +268,22 @@ def _parse_digest(text, mode):
     return "\n\n".join(blocks)
 
 
+def _sector_snapshot_text():
+    """Formats the latest sector index snapshot (from market_kpis.json,
+    populated by market_data.fetch_market_kpis()) as a plain-text line
+    for the digest prompt - e.g. "Bank -0.9%, IT -0.1%, Metal -0.7%".
+    Returns "" if no sector data is available yet."""
+    kpis = load_kpis()
+    parts = []
+    for key, (label, _ticker) in SECTOR_INDICES.items():
+        kpi = kpis.get(key)
+        change_pct = kpi.get("change_pct") if kpi else None
+        if change_pct is not None:
+            sign = "+" if change_pct >= 0 else ""
+            parts.append(f"{label} {sign}{change_pct}%")
+    return ", ".join(parts)
+
+
 def _ai_digest(mode, items):
     """Returns "" on any failure (no API key, network error, response
     that doesn't match the expected format) - same never-break-the-run
@@ -255,12 +293,19 @@ def _ai_digest(mode, items):
 
     listing = "\n".join(f"{i + 1}. [{it['source']}] {it['title']} — {it['summary']}" for i, it in enumerate(items))
 
+    sector_snapshot = _sector_snapshot_text()
+    sector_block = (
+        f"\n\nCurrent Nifty sector index moves (real data, use these exact "
+        f"numbers): {sector_snapshot}"
+        if sector_snapshot else ""
+    )
+
     try:
         response = _client.messages.create(
             model=ANTHROPIC_MODEL,
             max_tokens=900,
             system=_SYSTEM_PROMPTS[mode],
-            messages=[{"role": "user", "content": f"RSS batch ({len(items)} items):\n{listing}"}],
+            messages=[{"role": "user", "content": f"RSS batch ({len(items)} items):\n{listing}{sector_block}"}],
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
         if text.strip().upper() == "NOTHING":
