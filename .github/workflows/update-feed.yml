@@ -11,9 +11,12 @@ name: Update market wire
 # this mode only fetches/filters/records to the dashboard, it no
 # longer posts to WhatsApp - see main.py) from the digest runs, which
 # need their own separate cron-job.org jobs POSTing {"ref": "main",
-# "inputs": {"mode": "hourly"}} (or "morning"/"evening") at the
-# desired times. "hourly" is the one that actually reaches WhatsApp
-# for routine updates - see digest.py.
+# "inputs": {"mode": "hourly"}} (or "morning"/"evening"/"weekly"/
+# "monthly") at the desired times. "hourly" is the one that actually
+# reaches WhatsApp for routine updates - see digest.py. Suggested
+# schedules for the two newest: weekly ~Friday 4:30 PM IST (after
+# close), monthly ~1st of the month, morning (rolling 30-day window,
+# not calendar-month-aligned - see digest.py).
 on:
   workflow_dispatch:
     inputs:
@@ -27,6 +30,8 @@ on:
           - hourly
           - morning
           - evening
+          - weekly
+          - monthly
 
 # Needed so this workflow is allowed to push the updated alerts.json
 # back to the repo.

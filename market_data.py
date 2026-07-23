@@ -67,6 +67,46 @@ def _fetch_yahoo_quote(ticker):
         return None
 
 
+def _fetch_yahoo_period_change(ticker, range_param):
+    """Returns (latest_close, pct_change_over_period) comparing the
+    earliest to the latest daily close over the given Yahoo range
+    ("5d" for ~1 trading week, "1mo" for ~1 trading month) - unlike
+    _fetch_yahoo_quote, which only compares against yesterday's close.
+    Used for the weekly/monthly digests' sector-rotation view. Returns
+    None on failure or if fewer than 2 valid closes come back."""
+    try:
+        resp = requests.get(
+            _YAHOO_URL.format(ticker=ticker),
+            headers=_YAHOO_HEADERS,
+            params={"range": range_param, "interval": "1d"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        result = resp.json()["chart"]["result"][0]
+        closes = [c for c in result["indicators"]["quote"][0]["close"] if c is not None]
+        if len(closes) < 2:
+            return None
+        first, last = closes[0], closes[-1]
+        return last, (last - first) / first * 100
+    except Exception:
+        return None
+
+
+def fetch_sector_period_performance(range_param):
+    """Returns {key: {"label": ..., "value": ..., "change_pct": ...}}
+    for every SECTOR_INDICES ticker, using the period-over-period
+    change (see _fetch_yahoo_period_change) rather than a single day's
+    move - fetched fresh on each call rather than persisted, since
+    this is only used at digest-build time (weekly/monthly), not the
+    dashboard's "current value" KPI strip."""
+    performance = {}
+    for key, (label, ticker) in SECTOR_INDICES.items():
+        result = _fetch_yahoo_period_change(ticker, range_param)
+        if result:
+            performance[key] = {"label": f"Nifty {label}", "value": round(result[0], 2), "change_pct": round(result[1], 2)}
+    return performance
+
+
 def _fetch_usd_inr():
     """Returns the USD/INR rate, or None on failure."""
     try:

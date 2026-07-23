@@ -15,7 +15,7 @@ from datetime import datetime, time, timedelta, timezone
 
 from feed_fetcher import fetch_all_entries
 from formatter import _client, ANTHROPIC_MODEL, _clean_summary
-from market_data import load_kpis, SECTOR_INDICES
+from market_data import fetch_sector_period_performance
 from storage import dedupe_similar_titles
 from web_output import load_alerts
 
@@ -49,18 +49,6 @@ _SHARED_RULES = (
     "NOTHING"
 )
 
-_SECTOR_INSTRUCTION = (
-    "You'll be given the actual current % move for each major Nifty "
-    "sector index (Bank, IT, Metal, Auto, Pharma, FMCG, Energy, Realty, "
-    "PSU Bank) - use those real numbers, don't estimate or invent your "
-    "own. For each sector that moved meaningfully, explain what's "
-    "driving it using the news batch (a specific policy move, a "
-    "commodity swing, an earnings theme, global cues) - don't just "
-    "restate the number with no reason. Sectors with a small/flat move "
-    "and no clear driver in the batch can be grouped together briefly "
-    "or left out rather than forced into an explanation."
-)
-
 _MORNING_SYSTEM_PROMPT = (
     "You are a macro markets analyst preparing the pre-market WhatsApp "
     "briefing for Indian equity investors, covering the window from "
@@ -71,7 +59,6 @@ _MORNING_SYSTEM_PROMPT = (
     "GLOBAL: <how US markets closed, how Asia is trading, and the "
     "gap-up/gap-down bias for India's open - only if there's a clear "
     "signal>\n"
-    "SECTORS: <how each major sector is set to perform and why - " + _SECTOR_INSTRUCTION + ">\n"
     "CATALYSTS: <key overnight catalysts - policy, FII/DII data, "
     "geopolitics, policymaker statements, inflation/jobs data, rate "
     "decisions - with reasoning, impact, and sectors/stocks affected>\n"
@@ -88,7 +75,6 @@ _EVENING_SYSTEM_PROMPT = (
     "them and which sectors/stocks were affected, and flag what to watch "
     "overnight/tomorrow.\n\n"
     "Respond using EXACTLY this line format:\n"
-    "SECTORS: <how each major sector performed today and why - " + _SECTOR_INSTRUCTION + ">\n"
     "CATALYSTS: <today's real catalysts - policy moves, FII/DII data, "
     "mutual fund flow data, geopolitics, policymaker statements, "
     "inflation/jobs data, rate decisions - with reasoning, impact, and "
@@ -113,10 +99,6 @@ _HOURLY_SYSTEM_PROMPT = (
     "Respond using EXACTLY this line format:\n"
     "HEADLINE: <if one story clearly dominated the hour, name it in one "
     "line - omit this line entirely if nothing was dominant>\n"
-    "SECTORS: <brief sector performance snapshot with drivers, only for "
-    "sectors that moved meaningfully or had sector-specific news this "
-    "hour - " + _SECTOR_INSTRUCTION + " Omit this line entirely if "
-    "nothing sector-specific happened this hour>\n"
     "UPDATES: <everything else material from the last hour, synthesized "
     "into a few sentences - group related items together and prioritize "
     "by impact rather than just listing headlines in order>\n"
@@ -124,17 +106,62 @@ _HOURLY_SYSTEM_PROMPT = (
     "nothing specific>\n\n" + _SHARED_RULES
 )
 
+_SECTOR_INSTRUCTION = (
+    "You'll be given the actual % move for each major Nifty sector index "
+    "(Bank, IT, Metal, Auto, Pharma, FMCG, Energy, Realty, PSU Bank) over "
+    "this period - use those real numbers, don't estimate or invent your "
+    "own. Rank or group them by performance (leaders vs laggards) and "
+    "explain what's driving the standout movers using the news batch (a "
+    "policy shift, a commodity trend, an earnings theme, global cues) - "
+    "don't just restate the numbers with no reason. Sectors with a small/"
+    "flat move and no clear driver can be grouped together briefly."
+)
+
+_WEEKLY_SYSTEM_PROMPT = (
+    "You are a macro markets analyst preparing a weekly WhatsApp wrap-up "
+    "for Indian equity investors, covering the last 7 days. The focus is "
+    "sector rotation - which sectors led, which lagged, and why - plus "
+    "the week's real catalysts.\n\n"
+    "Respond using EXACTLY this line format:\n"
+    "SECTORS: <sector performance over the week and what drove it - " + _SECTOR_INSTRUCTION + ">\n"
+    "CATALYSTS: <the week's real catalysts - policy moves, FII/DII/mutual "
+    "fund flow trends, geopolitics, policymaker statements, inflation/"
+    "jobs data, rate decisions - with reasoning, impact, and sectors/"
+    "stocks affected>\n"
+    "COMMODITIES: <the week's moves in crude, gold, silver, metals, "
+    "INR/USD if material, with sector read-through>\n"
+    "WATCH: <events, data releases, or decisions in the coming week that "
+    "could set the tone, if known from the source items>\n\n" + _SHARED_RULES
+)
+
+_MONTHLY_SYSTEM_PROMPT = (
+    "You are a macro markets analyst preparing a monthly WhatsApp wrap-up "
+    "for Indian equity investors, covering the last 30 days. The focus is "
+    "sector rotation over the month - which sectors led, which lagged, "
+    "and the broader macro themes that shaped the month, not routine "
+    "day-to-day noise.\n\n"
+    "Respond using EXACTLY this line format:\n"
+    "SECTORS: <sector performance over the month and what drove it - " + _SECTOR_INSTRUCTION + ">\n"
+    "CATALYSTS: <the month's defining catalysts and themes - policy "
+    "moves, FII/DII/mutual fund flow trends, geopolitics, policymaker "
+    "statements, inflation/jobs data, rate decisions - with reasoning, "
+    "impact, and sectors/stocks affected. Prioritize themes that played "
+    "out over multiple weeks over single-day events>\n"
+    "COMMODITIES: <the month's moves in crude, gold, silver, metals, "
+    "INR/USD if material, with sector read-through>\n"
+    "WATCH: <events, data releases, or decisions in the coming month "
+    "that could set the tone, if known from the source items>\n\n" + _SHARED_RULES
+)
+
 # (prefix, display label, icon)
 _DIGEST_SECTIONS = {
     "morning": (
         ("GLOBAL:", "Global Markets Overnight", "🌏"),
-        ("SECTORS:", "Sector Watch", "📊"),
         ("CATALYSTS:", "Key Overnight Catalysts", "📰"),
         ("COMMODITIES:", "Commodities & Currency", "🛢️"),
         ("WATCH:", "Watch Today", "👀"),
     ),
     "evening": (
-        ("SECTORS:", "Sector Watch", "📊"),
         ("CATALYSTS:", "Day's Key Catalysts", "📰"),
         ("FLOWS:", "FII/DII Snapshot", "🏦"),
         ("COMMODITIES:", "Commodities & Currency", "🛢️"),
@@ -142,9 +169,20 @@ _DIGEST_SECTIONS = {
     ),
     "hourly": (
         ("HEADLINE:", "This Hour", "⚡"),
-        ("SECTORS:", "Sector Watch", "📊"),
         ("UPDATES:", "Updates", "📰"),
         ("WATCH:", "Watch", "👀"),
+    ),
+    "weekly": (
+        ("SECTORS:", "Sector Rotation This Week", "📊"),
+        ("CATALYSTS:", "Week's Key Catalysts", "📰"),
+        ("COMMODITIES:", "Commodities & Currency", "🛢️"),
+        ("WATCH:", "Watch Next Week", "👀"),
+    ),
+    "monthly": (
+        ("SECTORS:", "Sector Rotation This Month", "📊"),
+        ("CATALYSTS:", "Month's Defining Themes", "📰"),
+        ("COMMODITIES:", "Commodities & Currency", "🛢️"),
+        ("WATCH:", "Watch Next Month", "👀"),
     ),
 }
 
@@ -152,15 +190,30 @@ _DIGEST_HEADING = {
     "morning": "🌅 *Morning Briefing*",
     "evening": "🌆 *Evening Wrap*",
     "hourly": "🕐 *Hourly Update*",
+    "weekly": "📅 *Weekly Wrap*",
+    "monthly": "🗓️ *Monthly Wrap*",
 }
 
 _SYSTEM_PROMPTS = {
     "morning": _MORNING_SYSTEM_PROMPT,
     "evening": _EVENING_SYSTEM_PROMPT,
     "hourly": _HOURLY_SYSTEM_PROMPT,
+    "weekly": _WEEKLY_SYSTEM_PROMPT,
+    "monthly": _MONTHLY_SYSTEM_PROMPT,
+}
+
+# Yahoo Finance range parameter for each mode's sector-performance
+# lookback - only weekly/monthly show sector data (see
+# _sector_period_snapshot_text). Modes absent from this dict get no
+# sector block at all.
+_SECTOR_RANGE = {
+    "weekly": "5d",
+    "monthly": "1mo",
 }
 
 MAX_BATCH_ITEMS = 120
+WEEKLY_WINDOW_DAYS = 7
+MONTHLY_WINDOW_DAYS = 30
 
 
 def _previous_trading_day(d):
@@ -184,6 +237,15 @@ def digest_window_start(mode, now_utc=None):
         # hourly digest runs throughout the active window (see the
         # cron-job.org schedule), not just around market hours.
         return now_utc - timedelta(minutes=HOURLY_WINDOW_MINUTES)
+
+    if mode == "weekly":
+        return now_utc - timedelta(days=WEEKLY_WINDOW_DAYS)
+
+    if mode == "monthly":
+        # A rolling 30 days, not calendar-month-aligned - simpler than
+        # tracking "1st of the month" and avoids a short first digest
+        # if triggered mid-month.
+        return now_utc - timedelta(days=MONTHLY_WINDOW_DAYS)
 
     now_ist = now_utc.astimezone(IST)
 
@@ -268,19 +330,19 @@ def _parse_digest(text, mode):
     return "\n\n".join(blocks)
 
 
-def _sector_snapshot_text():
-    """Formats the latest sector index snapshot (from market_kpis.json,
-    populated by market_data.fetch_market_kpis()) as a plain-text line
-    for the digest prompt - e.g. "Bank -0.9%, IT -0.1%, Metal -0.7%".
-    Returns "" if no sector data is available yet."""
-    kpis = load_kpis()
+def _sector_period_snapshot_text(range_param):
+    """Formats sector index performance over the given Yahoo range
+    ("5d" for weekly, "1mo" for monthly) as a plain-text line for the
+    digest prompt - e.g. "Bank -3.3%, IT -2.37%, Metal +0.26%". This
+    is a fresh live fetch each call (not persisted), since it's only
+    needed at digest-build time. Returns "" on total fetch failure."""
+    performance = fetch_sector_period_performance(range_param)
     parts = []
-    for key, (label, _ticker) in SECTOR_INDICES.items():
-        kpi = kpis.get(key)
-        change_pct = kpi.get("change_pct") if kpi else None
-        if change_pct is not None:
-            sign = "+" if change_pct >= 0 else ""
-            parts.append(f"{label} {sign}{change_pct}%")
+    for data in performance.values():
+        change_pct = data["change_pct"]
+        sign = "+" if change_pct >= 0 else ""
+        label = data["label"].removeprefix("Nifty ")
+        parts.append(f"{label} {sign}{change_pct}%")
     return ", ".join(parts)
 
 
@@ -293,12 +355,14 @@ def _ai_digest(mode, items):
 
     listing = "\n".join(f"{i + 1}. [{it['source']}] {it['title']} — {it['summary']}" for i, it in enumerate(items))
 
-    sector_snapshot = _sector_snapshot_text()
-    sector_block = (
-        f"\n\nCurrent Nifty sector index moves (real data, use these exact "
-        f"numbers): {sector_snapshot}"
-        if sector_snapshot else ""
-    )
+    sector_block = ""
+    if mode in _SECTOR_RANGE:
+        sector_snapshot = _sector_period_snapshot_text(_SECTOR_RANGE[mode])
+        if sector_snapshot:
+            sector_block = (
+                f"\n\nNifty sector index moves over this period (real data, "
+                f"use these exact numbers): {sector_snapshot}"
+            )
 
     try:
         response = _client.messages.create(
@@ -317,9 +381,21 @@ def _ai_digest(mode, items):
 
 def build_digest(mode):
     """Returns the formatted WhatsApp message for the given mode
-    ("morning", "evening", or "hourly"), or None if there's nothing to
-    send (no API key configured, or nothing in the window cleared the
-    bar)."""
+    ("morning", "evening", "hourly", "weekly", or "monthly"), or None
+    if there's nothing to send (no API key configured, or nothing in
+    the window cleared the bar).
+
+    For weekly/monthly, the SECTORS data is always accurate - it's a
+    fresh Yahoo Finance fetch of the real period-over-period move, not
+    dependent on our own history. The CATALYSTS section is best-effort
+    only, though: RSS feeds only carry the last day or two of items,
+    and _gather_batch's other source (alerts.json) is capped at
+    web_output.MAX_HISTORY (200) entries, which recent daily alert
+    volume can exhaust well within a 7-30 day window. So a weekly/
+    monthly catalysts recap will tend to be recency-biased toward the
+    end of the window rather than a complete recap of the whole
+    period - a known limitation, not a bug.
+    """
     window_start_utc = digest_window_start(mode)
     items = _gather_batch(mode, window_start_utc)
     body = _ai_digest(mode, items)

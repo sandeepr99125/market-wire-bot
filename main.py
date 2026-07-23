@@ -89,7 +89,10 @@ def run_digest(mode):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", default="realtime", choices=["realtime", "hourly", "morning", "evening"])
+    parser.add_argument(
+        "--mode", default="realtime",
+        choices=["realtime", "hourly", "morning", "evening", "weekly", "monthly"],
+    )
     args = parser.parse_args()
 
     if args.mode == "realtime":

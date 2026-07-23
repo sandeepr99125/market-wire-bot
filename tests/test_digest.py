@@ -10,7 +10,7 @@ API key and its failure mode (return "") is already the safe default.
 from datetime import datetime, timezone
 
 import digest
-from digest import digest_window_start, _parse_digest, _sector_snapshot_text
+from digest import digest_window_start, _parse_digest, _sector_period_snapshot_text
 
 
 def test_morning_window_looks_back_to_previous_days_close():
@@ -51,6 +51,18 @@ def test_hourly_window_works_on_a_weekend_unlike_morning_evening():
     assert start == datetime(2026, 7, 19, 7, 0, tzinfo=timezone.utc)
 
 
+def test_weekly_window_is_a_rolling_7_days():
+    now_utc = datetime(2026, 7, 20, 11, 0, tzinfo=timezone.utc)
+    start = digest_window_start("weekly", now_utc)
+    assert start == datetime(2026, 7, 13, 11, 0, tzinfo=timezone.utc)
+
+
+def test_monthly_window_is_a_rolling_30_days():
+    now_utc = datetime(2026, 7, 30, 11, 0, tzinfo=timezone.utc)
+    start = digest_window_start("monthly", now_utc)
+    assert start == datetime(2026, 6, 30, 11, 0, tzinfo=timezone.utc)
+
+
 def test_parse_digest_builds_labeled_block_for_morning():
     raw = (
         "GLOBAL: US markets closed higher on rate-cut hopes; Asia trading mixed.\n"
@@ -65,6 +77,7 @@ def test_parse_digest_builds_labeled_block_for_morning():
     assert "🛢️ *Commodities & Currency:* Crude slipped 2%" in result
     assert "👀 *Watch Today:* US CPI print due this evening." in result
     assert result.count("\n\n") == 3
+    assert "Sector" not in result  # morning no longer carries a sectors section
 
 
 def test_parse_digest_omits_missing_sections():
@@ -105,6 +118,7 @@ def test_parse_digest_builds_labeled_block_for_hourly():
     assert "⚡ *This Hour:* RBI held the repo rate steady at 6.5%." in result
     assert "📰 *Updates:* Rupee slipped 12 paise" in result
     assert "👀 *Watch:* US CPI print due tonight." in result
+    assert "Sector" not in result  # hourly no longer carries a sectors section
 
 
 def test_parse_digest_hourly_omits_headline_when_nothing_dominant():
@@ -114,26 +128,46 @@ def test_parse_digest_hourly_omits_headline_when_nothing_dominant():
     assert "This Hour" not in result
 
 
-def test_parse_digest_includes_sectors_section_for_all_modes():
-    for mode, prefix in (("morning", "GLOBAL"), ("evening", "SECTORS"), ("hourly", "HEADLINE")):
-        raw = f"{prefix}: placeholder.\nSECTORS: Bank -0.9% on rate-hike fears; IT flat."
-        result = _parse_digest(raw, mode)
-        assert "📊 *Sector Watch:* Bank -0.9% on rate-hike fears; IT flat." in result
+def test_parse_digest_builds_labeled_block_for_weekly():
+    raw = (
+        "SECTORS: Metals led the week, up 4% on China demand hopes; IT lagged, "
+        "down 2% on weak US bookings.\n"
+        "CATALYSTS: RBI held rates steady at the MPC meeting.\n"
+        "COMMODITIES: Gold flat for the week.\n"
+        "WATCH: US jobs report due Friday."
+    )
+    result = _parse_digest(raw, "weekly")
+    assert "📊 *Sector Rotation This Week:* Metals led the week" in result
+    assert "📰 *Week's Key Catalysts:* RBI held rates steady" in result
+    assert "🛢️ *Commodities & Currency:* Gold flat for the week." in result
+    assert "👀 *Watch Next Week:* US jobs report due Friday." in result
 
 
-def test_sector_snapshot_text_formats_real_data(monkeypatch):
-    fake_kpis = {
-        "sector_bank": {"label": "Nifty Bank", "value": 56592.0, "change_pct": -0.94},
-        "sector_it": {"label": "Nifty IT", "value": 28533.55, "change_pct": 0.06},
-        "sector_metal": {"label": "Nifty Metal", "value": 12469.7, "change_pct": None},  # no change yet
+def test_parse_digest_builds_labeled_block_for_monthly():
+    raw = (
+        "SECTORS: Auto led the month on strong festive-season sales; Realty "
+        "lagged on high rates.\n"
+        "CATALYSTS: Fed cut rates 25bps mid-month, boosting EM flows.\n"
+        "COMMODITIES: Crude rose 5% on OPEC+ supply cuts.\n"
+        "WATCH: Union Budget expected next month."
+    )
+    result = _parse_digest(raw, "monthly")
+    assert "📊 *Sector Rotation This Month:* Auto led the month" in result
+    assert "📰 *Month's Defining Themes:* Fed cut rates 25bps" in result
+    assert "👀 *Watch Next Month:* Union Budget expected next month." in result
+
+
+def test_sector_period_snapshot_text_formats_real_data(monkeypatch):
+    fake_performance = {
+        "sector_bank": {"label": "Nifty Bank", "value": 56592.0, "change_pct": -3.3},
+        "sector_it": {"label": "Nifty IT", "value": 28533.55, "change_pct": 5.63},
     }
-    monkeypatch.setattr(digest, "load_kpis", lambda: fake_kpis)
-    text = _sector_snapshot_text()
-    assert "Bank -0.94%" in text
-    assert "IT +0.06%" in text
-    assert "Metal" not in text  # no change_pct available, skipped rather than showing "None%"
+    monkeypatch.setattr(digest, "fetch_sector_period_performance", lambda range_param: fake_performance)
+    text = _sector_period_snapshot_text("1mo")
+    assert "Bank -3.3%" in text
+    assert "IT +5.63%" in text
 
 
-def test_sector_snapshot_text_empty_when_no_kpi_data(monkeypatch):
-    monkeypatch.setattr(digest, "load_kpis", lambda: {})
-    assert _sector_snapshot_text() == ""
+def test_sector_period_snapshot_text_empty_on_total_failure(monkeypatch):
+    monkeypatch.setattr(digest, "fetch_sector_period_performance", lambda range_param: {})
+    assert _sector_period_snapshot_text("5d") == ""
