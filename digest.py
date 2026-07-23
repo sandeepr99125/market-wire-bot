@@ -379,6 +379,22 @@ def _ai_digest(mode, items):
         return ""
 
 
+def is_weekly_digest_day(now_utc=None):
+    """True on the day the weekly digest should also run, piggybacked
+    on the evening job instead of needing its own cron-job.org entry -
+    Friday, right after the week's last trading close."""
+    now_ist = (now_utc or datetime.now(timezone.utc)).astimezone(IST)
+    return now_ist.weekday() == 4  # Monday=0 ... Friday=4
+
+
+def is_monthly_digest_day(now_utc=None):
+    """True on the day the monthly digest should also run, piggybacked
+    on the morning job instead of needing its own cron-job.org entry -
+    the 1st of the month."""
+    now_ist = (now_utc or datetime.now(timezone.utc)).astimezone(IST)
+    return now_ist.day == 1
+
+
 def build_digest(mode):
     """Returns the formatted WhatsApp message for the given mode
     ("morning", "evening", "hourly", "weekly", or "monthly"), or None

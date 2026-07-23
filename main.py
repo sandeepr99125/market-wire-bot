@@ -32,7 +32,7 @@ from formatter import format_alert, get_summary
 from poster import post_alert
 from web_output import record_alert, load_alerts
 from market_data import fetch_market_kpis
-from digest import build_digest
+from digest import build_digest, is_weekly_digest_day, is_monthly_digest_day
 
 MAX_SUMMARY_WORKERS = 5
 
@@ -82,9 +82,18 @@ def run_digest(mode):
     message = build_digest(mode)
     if not message:
         print(f"No {mode} digest - nothing in the window cleared the bar.")
-        return
+    else:
+        post_alert(message)
 
-    post_alert(message)
+    # Weekly/monthly piggyback on the existing evening/morning
+    # schedule instead of needing their own separate cron-job.org
+    # entries - the evening job already fires daily, so on Fridays it
+    # also builds the weekly digest; the morning job already fires
+    # daily, so on the 1st of the month it also builds the monthly one.
+    if mode == "evening" and is_weekly_digest_day():
+        run_digest("weekly")
+    elif mode == "morning" and is_monthly_digest_day():
+        run_digest("monthly")
 
 
 if __name__ == "__main__":

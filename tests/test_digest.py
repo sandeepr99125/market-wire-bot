@@ -10,7 +10,13 @@ API key and its failure mode (return "") is already the safe default.
 from datetime import datetime, timezone
 
 import digest
-from digest import digest_window_start, _parse_digest, _sector_period_snapshot_text
+from digest import (
+    digest_window_start,
+    _parse_digest,
+    _sector_period_snapshot_text,
+    is_weekly_digest_day,
+    is_monthly_digest_day,
+)
 
 
 def test_morning_window_looks_back_to_previous_days_close():
@@ -171,3 +177,31 @@ def test_sector_period_snapshot_text_formats_real_data(monkeypatch):
 def test_sector_period_snapshot_text_empty_on_total_failure(monkeypatch):
     monkeypatch.setattr(digest, "fetch_sector_period_performance", lambda range_param: {})
     assert _sector_period_snapshot_text("5d") == ""
+
+
+def test_is_weekly_digest_day_true_on_friday_ist():
+    now_utc = datetime(2026, 7, 17, 12, 0, tzinfo=timezone.utc)  # Friday, 17:30 IST
+    assert is_weekly_digest_day(now_utc) is True
+
+
+def test_is_weekly_digest_day_false_on_thursday_ist():
+    now_utc = datetime(2026, 7, 16, 12, 0, tzinfo=timezone.utc)  # Thursday
+    assert is_weekly_digest_day(now_utc) is False
+
+
+def test_is_weekly_digest_day_uses_ist_date_not_utc_date():
+    # Thursday 2026-07-16 20:00 UTC = Friday 2026-07-17 01:30 IST -
+    # already Friday in IST even though the UTC calendar date is
+    # still Thursday.
+    now_utc = datetime(2026, 7, 16, 20, 0, tzinfo=timezone.utc)
+    assert is_weekly_digest_day(now_utc) is True
+
+
+def test_is_monthly_digest_day_true_on_first_of_month_ist():
+    now_utc = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+    assert is_monthly_digest_day(now_utc) is True
+
+
+def test_is_monthly_digest_day_false_on_other_days():
+    now_utc = datetime(2026, 8, 2, 12, 0, tzinfo=timezone.utc)
+    assert is_monthly_digest_day(now_utc) is False
