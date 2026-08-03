@@ -1,36 +1,36 @@
 {
   "nifty": {
     "label": "NIFTY 50",
-    "value": 24579.15,
-    "change_pct": 0.8,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 24586.85,
+    "change_pct": 0.83,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sensex": {
     "label": "SENSEX",
-    "value": 78697.46,
-    "change_pct": 0.77,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 78687.62,
+    "change_pct": 0.76,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
-    "value": 4116.5,
-    "change_pct": 0.23,
+    "value": 4115.0,
+    "change_pct": 0.19,
     "unit": "$/oz",
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
-    "value": 58.3,
-    "change_pct": 0.89,
+    "value": 58.41,
+    "change_pct": 1.08,
     "unit": "$/oz",
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
-    "value": 83.8,
-    "change_pct": -4.7,
+    "value": 83.54,
+    "change_pct": -4.99,
     "unit": "$/bbl",
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
@@ -41,13 +41,13 @@
     "label": "FII",
     "net_value_cr": 277.48,
     "date": "31-Jul-2026",
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": 2260.37,
     "date": "31-Jul-2026",
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
@@ -61,56 +61,56 @@
   },
   "sector_bank": {
     "label": "Nifty Bank",
-    "value": 57686.75,
+    "value": 57687.85,
     "change_pct": 0.74,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_it": {
     "label": "Nifty IT",
-    "value": 31364.55,
-    "change_pct": 2.14,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 31401.0,
+    "change_pct": 2.25,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_metal": {
     "label": "Nifty Metal",
-    "value": 12861.05,
-    "change_pct": 1.12,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 12870.1,
+    "change_pct": 1.19,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_auto": {
     "label": "Nifty Auto",
-    "value": 28924.0,
-    "change_pct": 0.63,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 28931.4,
+    "change_pct": 0.65,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_pharma": {
     "label": "Nifty Pharma",
-    "value": 26588.25,
-    "change_pct": 0.2,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 26568.45,
+    "change_pct": 0.13,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_fmcg": {
     "label": "Nifty FMCG",
-    "value": 49612.8,
-    "change_pct": 1.0,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 49647.7,
+    "change_pct": 1.07,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_energy": {
     "label": "Nifty Energy",
-    "value": 38816.6,
-    "change_pct": 0.22,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 38838.8,
+    "change_pct": 0.28,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_realty": {
     "label": "Nifty Realty",
-    "value": 905.55,
-    "change_pct": 0.45,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "value": 905.8,
+    "change_pct": 0.48,
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   },
   "sector_psu_bank": {
     "label": "Nifty PSU Bank",
-    "value": 8475.55,
+    "value": 8475.4,
     "change_pct": 1.29,
-    "fetched_at": "2026-08-03T07:45:32.845454+00:00"
+    "fetched_at": "2026-08-03T08:01:29.822959+00:00"
   }
 }
