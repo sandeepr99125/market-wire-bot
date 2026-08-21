@@ -1,5 +1,13 @@
 [
   {
+    "title": "RBI imposes monetary penalty on Shri Ram Finance Corporation Private Limited",
+    "link": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63422",
+    "source": "RBI",
+    "summary": "*Market Alert:* RBI fined Shri Ram Finance Corporation \u20b98.10 lakh for governance lapses including unauthorized director appointments, missing customer risk categorization, and delayed KYC uploads.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 Shri Ram Finance Corporation\n\n\ud83d\udca5 *Impact:* The penalty underscores regulatory tightening on non-bank lenders' compliance standards.\n\n\ud83d\udca1 *Reason:* RBI is enforcing stricter governance and KYC protocols across the NBFC sector to shore up systemic financial oversight.",
+    "message": "\ud83d\udcf0 *Market Alert:* RBI fined Shri Ram Finance Corporation \u20b98.10 lakh for governance lapses including unauthorized director appointments, missing customer risk categorization, and delayed KYC uploads.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 Shri Ram Finance Corporation\n\n\ud83d\udca5 *Impact:* The penalty underscores regulatory tightening on non-bank lenders' compliance standards.\n\n\ud83d\udca1 *Reason:* RBI is enforcing stricter governance and KYC protocols across the NBFC sector to shore up systemic financial oversight.\n\nhttps://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63422",
+    "fetched_at": "2026-08-21T12:15:34.132725+00:00"
+  },
+  {
     "title": "Reserve Bank of India \u2013 Bulletin Weekly Statistical Supplement \u2013 Extract",
     "link": "https://www.rbi.org.in/scripts/BS_PressReleaseDisplay.aspx?prid=63420",
     "source": "RBI",
@@ -1590,13 +1598,5 @@
     "summary": "*Market Alert:* India's market regulator SEBI is drafting AI governance rules requiring human oversight, data controls, and emergency shutdown mechanisms for AI systems used in trading and market surveillance.\n\n\ud83d\udcca *Sector/Stock:* Financials \u2014 NSE, BSE\n\n\ud83d\udca5 *Impact:* Could impose compliance costs on exchanges and fintech firms while potentially slowing AI deployment in Indian capital markets.\n\n\ud83d\udca1 *Reason:* New regulatory requirements typically require systems redesign and ongoing monitoring infrastructure, raising operational expenses for market\u2026",
     "message": "\ud83d\udcf0 *Market Alert:* India's market regulator SEBI is drafting AI governance rules requiring human oversight, data controls, and emergency shutdown mechanisms for AI systems used in trading and market surveillance.\n\n\ud83d\udcca *Sector/Stock:* Financials \u2014 NSE, BSE\n\n\ud83d\udca5 *Impact:* Could impose compliance costs on exchanges and fintech firms while potentially slowing AI deployment in Indian capital markets.\n\n\ud83d\udca1 *Reason:* New regulatory requirements typically require systems redesign and ongoing monitoring infrastructure, raising operational expenses for market\u2026\n\nhttps://www.thehindubusinessline.com/markets/sebi-to-issue-ai-guidelines-with-human-oversight-data-controls-and-kill-switches/article71363840.ece",
     "fetched_at": "2026-08-19T08:15:35.850068+00:00"
-  },
-  {
-    "title": "SEBI chief says manipulation of closing auction session will face stern action",
-    "link": "https://www.thehindubusinessline.com/markets/sebi-chief-says-manipulation-of-closing-auction-session-will-face-stern-action/article71363921.ece",
-    "source": "The Hindu BusinessLine",
-    "summary": "*Market Alert:* India's market regulator warned it will take strict action against any manipulation of the closing auction session, defending the new mechanism against trader concerns.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 BSE, NSE\n\n\ud83d\udca5 *Impact:* Regulators are signaling heightened enforcement around the closing auction, which could deter market-rigging attempts but may also create compliance costs for brokers and trading firms.\n\n\ud83d\udca1 *Reason:* The closing auction is a critical price-discovery mechanism; manipulation here directly distorts\u2026",
-    "message": "\ud83d\udcf0 *Market Alert:* India's market regulator warned it will take strict action against any manipulation of the closing auction session, defending the new mechanism against trader concerns.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 BSE, NSE\n\n\ud83d\udca5 *Impact:* Regulators are signaling heightened enforcement around the closing auction, which could deter market-rigging attempts but may also create compliance costs for brokers and trading firms.\n\n\ud83d\udca1 *Reason:* The closing auction is a critical price-discovery mechanism; manipulation here directly distorts\u2026\n\nhttps://www.thehindubusinessline.com/markets/sebi-chief-says-manipulation-of-closing-auction-session-will-face-stern-action/article71363921.ece",
-    "fetched_at": "2026-08-19T08:15:35.847371+00:00"
   }
 ]
