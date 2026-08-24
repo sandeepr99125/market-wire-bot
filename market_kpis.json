@@ -1,116 +1,116 @@
 {
   "nifty": {
     "label": "NIFTY 50",
-    "value": 24186.45,
-    "change_pct": -0.27,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 24181.85,
+    "change_pct": -0.29,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sensex": {
     "label": "SENSEX",
-    "value": 77358.48,
-    "change_pct": -0.24,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 77316.35,
+    "change_pct": -0.29,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
-    "value": 4707.0,
-    "change_pct": 0.56,
+    "value": 4705.1,
+    "change_pct": 0.52,
     "unit": "$/oz",
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
-    "value": 69.13,
-    "change_pct": -0.58,
+    "value": 69.09,
+    "change_pct": -0.63,
     "unit": "$/oz",
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
-    "value": 92.84,
-    "change_pct": -1.64,
+    "value": 92.75,
+    "change_pct": -1.74,
     "unit": "$/bbl",
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
     "value": 95.7,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "fii": {
     "label": "FII",
     "net_value_cr": -542.71,
     "date": "21-Aug-2026",
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": 2124.14,
     "date": "21-Aug-2026",
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
-    "value": 144826,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 144768,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "silver_inr_approx": {
     "label": "Silver \u20b9/kg (approx)",
-    "value": 212701,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 212593,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_bank": {
     "label": "Nifty Bank",
-    "value": 57338.75,
+    "value": 57339.1,
     "change_pct": -0.73,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_it": {
     "label": "Nifty IT",
-    "value": 30748.35,
-    "change_pct": 0.71,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 30733.45,
+    "change_pct": 0.66,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_metal": {
     "label": "Nifty Metal",
-    "value": 13323.35,
-    "change_pct": 1.14,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 13335.25,
+    "change_pct": 1.23,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_auto": {
     "label": "Nifty Auto",
-    "value": 29113.9,
-    "change_pct": -0.04,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 29107.8,
+    "change_pct": -0.06,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_pharma": {
     "label": "Nifty Pharma",
-    "value": 26324.4,
-    "change_pct": -0.13,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 26321.95,
+    "change_pct": -0.14,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_fmcg": {
     "label": "Nifty FMCG",
-    "value": 47209.0,
-    "change_pct": -0.64,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 47243.7,
+    "change_pct": -0.56,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_energy": {
     "label": "Nifty Energy",
-    "value": 38272.1,
+    "value": 38272.0,
     "change_pct": 0.05,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_realty": {
     "label": "Nifty Realty",
-    "value": 910.45,
-    "change_pct": -0.13,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "value": 912.2,
+    "change_pct": 0.07,
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   },
   "sector_psu_bank": {
     "label": "Nifty PSU Bank",
-    "value": 8519.7,
+    "value": 8519.9,
     "change_pct": -1.16,
-    "fetched_at": "2026-08-24T07:00:49.777921+00:00"
+    "fetched_at": "2026-08-24T07:15:31.455136+00:00"
   }
 }
