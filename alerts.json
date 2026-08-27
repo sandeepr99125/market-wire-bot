@@ -1,5 +1,13 @@
 [
   {
+    "title": "Sebi\u2019s new closing-price mechanism trips up ETFs",
+    "link": "https://www.livemint.com/market/stock-market-news/sebis-new-closing-price-mechanism-trips-up-etfs-11787731378392.html",
+    "source": "LiveMint",
+    "summary": "*Market Alert:* India's market regulator introduced a new closing auction mechanism that's causing execution problems for exchange-traded funds trying to match their underlying index constituents.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 ETFs\n\n\ud83d\udca5 *Impact:* ETFs are struggling to efficiently rebalance and track their indexes due to the new auction parameters.\n\n\ud83d\udca1 *Reason:* The \u00b13% price band around the reference window is too narrow to accommodate the volume of pooled orders ETFs need to execute at market close.",
+    "message": "\ud83d\udcf0 *Market Alert:* India's market regulator introduced a new closing auction mechanism that's causing execution problems for exchange-traded funds trying to match their underlying index constituents.\n\n\ud83d\udcca *Sector/Stock:* Financial Services \u2014 ETFs\n\n\ud83d\udca5 *Impact:* ETFs are struggling to efficiently rebalance and track their indexes due to the new auction parameters.\n\n\ud83d\udca1 *Reason:* The \u00b13% price band around the reference window is too narrow to accommodate the volume of pooled orders ETFs need to execute at market close.\n\nhttps://www.livemint.com/market/stock-market-news/sebis-new-closing-price-mechanism-trips-up-etfs-11787731378392.html",
+    "fetched_at": "2026-08-27T00:45:35.806782+00:00"
+  },
+  {
     "title": "Rupee slide, valuation rules put foreign asset disclosure scheme out of reach for many",
     "link": "https://economictimes.indiatimes.com/markets/forex/forex-news/rupee-slide-valuation-rules-put-foreign-asset-disclosure-scheme-out-of-reach-for-many/articleshow/133553250.cms",
     "source": "Economic Times",
@@ -1590,13 +1598,5 @@
     "summary": "*Market Alert:* Trump suggested Canada should become a US state after trade negotiations broke down, while Canada's PM announced retaliatory tariffs in response.\n\n\ud83d\udcca *Sector/Stock:* Industrials, Materials, Energy \u2014 cross-sector exposure\n\n\ud83d\udca5 *Impact:* Escalating US-Canada trade tensions risk widespread tariff impacts across supply chains and border-dependent sectors.\n\n\ud83d\udca1 *Reason:* Collapsed negotiations and mutual retaliatory measures threaten the integrated North American economy that depends on tariff-free cross-border trade.",
     "message": "\ud83d\udcf0 *Market Alert:* Trump suggested Canada should become a US state after trade negotiations broke down, while Canada's PM announced retaliatory tariffs in response.\n\n\ud83d\udcca *Sector/Stock:* Industrials, Materials, Energy \u2014 cross-sector exposure\n\n\ud83d\udca5 *Impact:* Escalating US-Canada trade tensions risk widespread tariff impacts across supply chains and border-dependent sectors.\n\n\ud83d\udca1 *Reason:* Collapsed negotiations and mutual retaliatory measures threaten the integrated North American economy that depends on tariff-free cross-border trade.\n\nhttps://www.bbc.co.uk/news/articles/cx272np7vgyo?at_medium=RSS&at_campaign=rss",
     "fetched_at": "2026-08-24T05:45:36.502910+00:00"
-  },
-  {
-    "title": "Global Market:  Japan\u2019s Nikkei swings as AI stocks slip ahead of Nvidia results",
-    "link": "https://economictimes.indiatimes.com/markets/us-stocks/news/global-market-japans-nikkei-swings-as-ai-stocks-slip-ahead-of-nvidia-results/articleshow/133451438.cms",
-    "source": "Economic Times",
-    "summary": "*Market Alert:* Japan's Nikkei fluctuated as AI stocks weakened ahead of Nvidia's earnings announcement this week.\n\n\ud83d\udcca *Sector/Stock:* Technology \u2014 Nvidia\n\n\ud83d\udca5 *Impact:* Japanese equities remained pressured by sector-wide caution and macro headwinds including rising yields and inflation concerns.\n\n\ud83d\udca1 *Reason:* Investors are nervous about Nvidia's results and worried about AI deployment costs, while BoJ rate hike expectations are dampening risk appetite.",
-    "message": "\ud83d\udcf0 *Market Alert:* Japan's Nikkei fluctuated as AI stocks weakened ahead of Nvidia's earnings announcement this week.\n\n\ud83d\udcca *Sector/Stock:* Technology \u2014 Nvidia\n\n\ud83d\udca5 *Impact:* Japanese equities remained pressured by sector-wide caution and macro headwinds including rising yields and inflation concerns.\n\n\ud83d\udca1 *Reason:* Investors are nervous about Nvidia's results and worried about AI deployment costs, while BoJ rate hike expectations are dampening risk appetite.\n\nhttps://economictimes.indiatimes.com/markets/us-stocks/news/global-market-japans-nikkei-swings-as-ai-stocks-slip-ahead-of-nvidia-results/articleshow/133451438.cms",
-    "fetched_at": "2026-08-24T05:15:37.796616+00:00"
   }
 ]
