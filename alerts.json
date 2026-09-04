@@ -1,5 +1,13 @@
 [
   {
+    "title": "US diesel prices hit an all-time-high",
+    "link": "https://www.bbc.co.uk/news/articles/c7903r0grx0o?at_medium=RSS&at_campaign=rss",
+    "source": "BBC Business",
+    "summary": "Fuel prices have soared since the Iran conflict began at the end of February, mirroring the surge in wholesale oil prices.",
+    "message": "\ud83d\udcf0 Fuel prices have soared since the Iran conflict began at the end of February, mirroring the surge in wholesale oil prices.\n\nhttps://www.bbc.co.uk/news/articles/c7903r0grx0o?at_medium=RSS&at_campaign=rss",
+    "fetched_at": "2026-09-04T10:01:06.942013+00:00"
+  },
+  {
     "title": "Gold price falls \u20b9431 to \u20b91.55 lakh/10g in futures trade; snaps two-day rise",
     "link": "https://www.thehindubusinessline.com/markets/gold/gold-price-falls-431-to-155-lakh10g-in-futures-trade-snaps-two-day-rise/article71427695.ece",
     "source": "The Hindu BusinessLine",
@@ -1590,13 +1598,5 @@
     "summary": "",
     "message": "\ud83d\udcf0 Sensex Today | Nifty 50 | Stock Market Live Updates: GIFT Nifty signals a negative start; Asian shares trade lower\n\nhttps://economictimes.indiatimes.com/markets/stocks/live-blog/bse-sensex-today-nifty50-stock-market-live-updates-gift-nifty-ril-wipro-share-price-02-september-2026/liveblog/133695430.cms",
     "fetched_at": "2026-09-02T02:45:39.000439+00:00"
-  },
-  {
-    "title": "Oil Price Today (September 2): Crude oil nears $97 as war tensions escalate. Will it hit $100 again?",
-    "link": "https://economictimes.indiatimes.com/markets/commodities/news/oil-price-today-september-2-crude-oil-nears-97-as-war-tensions-escalate-will-it-hit-100-again/articleshow/133695425.cms",
-    "source": "Economic Times",
-    "summary": "The United States said it carried out a series of airstrikes against targets in Iran overnight, drawing a response from Tehran in what was described as the most serious escalation in the conflict between the two countries in weeks.",
-    "message": "\ud83d\udcf0 The United States said it carried out a series of airstrikes against targets in Iran overnight, drawing a response from Tehran in what was described as the most serious escalation in the conflict between the two countries in weeks.\n\nhttps://economictimes.indiatimes.com/markets/commodities/news/oil-price-today-september-2-crude-oil-nears-97-as-war-tensions-escalate-will-it-hit-100-again/articleshow/133695425.cms",
-    "fetched_at": "2026-09-02T02:45:38.997872+00:00"
   }
 ]
