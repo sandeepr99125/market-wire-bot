@@ -1,5 +1,13 @@
 [
   {
+    "title": "SBI Chairman CS Setty sees discretionary credit demand moderating, expects 50 bps rate hike in December",
+    "link": "https://economictimes.indiatimes.com/markets/stocks/news/sbi-chairman-cs-setty-sees-discretionary-credit-demand-moderating-expects-50-bps-rate-hike-in-december/articleshow/135222275.cms",
+    "source": "Economic Times",
+    "summary": "SBI chairman CS Setty expects higher interest rates to moderate credit demand in rate-sensitive sectors, particularly discretionary spending. The bank forecasts another 50 basis points repo rate hike in December, followed by a pause. Setty said he sees no system-level concerns over retail asset quality, though highly leveraged households may face pressure.",
+    "message": "\ud83d\udcf0 SBI chairman CS Setty expects higher interest rates to moderate credit demand in rate-sensitive sectors, particularly discretionary spending. The bank forecasts another 50 basis points repo rate hike in December, followed by a pause. Setty said he sees no system-level concerns over retail asset quality, though highly leveraged households may face pressure.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/sbi-chairman-cs-setty-sees-discretionary-credit-demand-moderating-expects-50-bps-rate-hike-in-december/articleshow/135222275.cms",
+    "fetched_at": "2026-10-27T01:15:45.172156+00:00"
+  },
+  {
     "title": "Stocks in news: Paytm, Tata Consumer, Dalmia Bharat, REC and DCM Shriram",
     "link": "https://economictimes.indiatimes.com/markets/stocks/news/stocks-in-news-paytm-tata-consumer-dalmia-bharat-rec-and-dcm-shriram/articleshow/135216594.cms",
     "source": "Economic Times",
@@ -1590,13 +1598,5 @@
     "summary": "The RBI has asked financial entities to remove management and administrative interfaces from public internet access, enforce multi-factor authentication for administrative access, and restrict access to cloud and backend systems on a least-privilege basis. The measures include auditing source code, repositories, configuration files, client applications and cloud storage for exposed credentials, and immediately rotating and purging compromised credentials.",
     "message": "\ud83d\udcf0 The RBI has asked financial entities to remove management and administrative interfaces from public internet access, enforce multi-factor authentication for administrative access, and restrict access to cloud and backend systems on a least-privilege basis. The measures include auditing source code, repositories, configuration files, client applications and cloud storage for exposed credentials, and immediately rotating and purging compromised credentials.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/rbi-asks-banks-payment-firms-to-forensically-clear-tech-environments-in-case-of-a-data-breach/articleshow/135130909.cms",
     "fetched_at": "2026-10-23T01:01:13.817976+00:00"
-  },
-  {
-    "title": "Stocks in news: Swiggy, Infosys, HPCL, eMudhra, Adani Power, Shriram Finance, Tata Motors and NLC India",
-    "link": "https://economictimes.indiatimes.com/markets/stocks/news/stocks-in-news-swiggy-infosys-hpcl-emudhra-adani-power-shriram-finance-tata-motors-and-nlc-india/articleshow/135123918.cms",
-    "source": "Economic Times",
-    "summary": "Indian equity markets faced continued downward pressure, marked by persistent selling and negative global indicators. The Nifty 50 index saw a decline, with analysts pointing out critical resistance and support points. Numerous companies disclosed their financial results, showcasing a mix of profits and setbacks for the September quarter. As various firms prepare to announce their quarterly earnings, market participants should remain vigilant over the coming days.",
-    "message": "\ud83d\udcf0 Indian equity markets faced continued downward pressure, marked by persistent selling and negative global indicators. The Nifty 50 index saw a decline, with analysts pointing out critical resistance and support points. Numerous companies disclosed their financial results, showcasing a mix of profits and setbacks for the September quarter. As various firms prepare to announce their quarterly earnings, market participants should remain vigilant over the coming days.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/stocks-in-news-swiggy-infosys-hpcl-emudhra-adani-power-shriram-finance-tata-motors-and-nlc-india/articleshow/135123918.cms",
-    "fetched_at": "2026-10-23T01:01:13.815491+00:00"
   }
 ]
