@@ -1,5 +1,13 @@
 [
   {
+    "title": "India earns nearly 50% more from fuel exports in April-September as costlier oil and weak rupee outweigh lower volumes",
+    "link": "https://economictimes.indiatimes.com/markets/stocks/news/india-earns-nearly-50-more-from-fuel-exports-in-april-september-as-costlier-oil-and-weak-rupee-outweigh-lower-volumes/articleshow/135222347.cms",
+    "source": "Economic Times",
+    "summary": "India's petroleum product export earnings increased significantly in April to September, driven by high international prices. While the volume of shipments declined by 16%, earnings surged by nearly 50% in rupee terms. Diesel exports were the largest contributors to the earnings growth, accounting for 42% of the total volume. Both diesel and petrol consumption rose during this period, whereas production saw slight declines.",
+    "message": "\ud83d\udcf0 India's petroleum product export earnings increased significantly in April to September, driven by high international prices. While the volume of shipments declined by 16%, earnings surged by nearly 50% in rupee terms. Diesel exports were the largest contributors to the earnings growth, accounting for 42% of the total volume. Both diesel and petrol consumption rose during this period, whereas production saw slight declines.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/india-earns-nearly-50-more-from-fuel-exports-in-april-september-as-costlier-oil-and-weak-rupee-outweigh-lower-volumes/articleshow/135222347.cms",
+    "fetched_at": "2026-10-27T01:30:57.726106+00:00"
+  },
+  {
     "title": "SBI Chairman CS Setty sees discretionary credit demand moderating, expects 50 bps rate hike in December",
     "link": "https://economictimes.indiatimes.com/markets/stocks/news/sbi-chairman-cs-setty-sees-discretionary-credit-demand-moderating-expects-50-bps-rate-hike-in-december/articleshow/135222275.cms",
     "source": "Economic Times",
@@ -1590,13 +1598,5 @@
     "summary": "Nippon Life India Asset Management Company has obtained in-principle approval from Sebi regarding a settlement case involving mutual fund investments in Yes Bank's AT1 bonds. With a settlement payment of \u20b996.8 crore, including management fee reversals, this comes after a show-cause notice was issued in August 2024 due to alleged non-compliance. The final ruling from Sebi is still anticipated by the company and its representatives.",
     "message": "\ud83d\udcf0 Nippon Life India Asset Management Company has obtained in-principle approval from Sebi regarding a settlement case involving mutual fund investments in Yes Bank's AT1 bonds. With a settlement payment of \u20b996.8 crore, including management fee reversals, this comes after a show-cause notice was issued in August 2024 due to alleged non-compliance. The final ruling from Sebi is still anticipated by the company and its representatives.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/nippon-amc-gets-sebi-nod-for-settlement-in-yes-bank-at1-case/articleshow/135131314.cms",
     "fetched_at": "2026-10-23T01:15:43.580526+00:00"
-  },
-  {
-    "title": "RBI asks banks, payment firms to forensically clear tech environments in case of a data breach",
-    "link": "https://economictimes.indiatimes.com/markets/stocks/news/rbi-asks-banks-payment-firms-to-forensically-clear-tech-environments-in-case-of-a-data-breach/articleshow/135130909.cms",
-    "source": "Economic Times",
-    "summary": "The RBI has asked financial entities to remove management and administrative interfaces from public internet access, enforce multi-factor authentication for administrative access, and restrict access to cloud and backend systems on a least-privilege basis. The measures include auditing source code, repositories, configuration files, client applications and cloud storage for exposed credentials, and immediately rotating and purging compromised credentials.",
-    "message": "\ud83d\udcf0 The RBI has asked financial entities to remove management and administrative interfaces from public internet access, enforce multi-factor authentication for administrative access, and restrict access to cloud and backend systems on a least-privilege basis. The measures include auditing source code, repositories, configuration files, client applications and cloud storage for exposed credentials, and immediately rotating and purging compromised credentials.\n\nhttps://economictimes.indiatimes.com/markets/stocks/news/rbi-asks-banks-payment-firms-to-forensically-clear-tech-environments-in-case-of-a-data-breach/articleshow/135130909.cms",
-    "fetched_at": "2026-10-23T01:01:13.817976+00:00"
   }
 ]
