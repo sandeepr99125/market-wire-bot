@@ -1,36 +1,36 @@
 {
   "nifty": {
     "label": "NIFTY 50",
-    "value": 25457.05,
-    "change_pct": 1.24,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 25452.6,
+    "change_pct": 1.23,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sensex": {
     "label": "SENSEX",
-    "value": 82658.82,
-    "change_pct": 1.31,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 82786.07,
+    "change_pct": 1.46,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "gold": {
     "label": "Gold (Spot)",
-    "value": 3868.0,
-    "change_pct": 0.39,
+    "value": 3870.4,
+    "change_pct": 0.45,
     "unit": "$/oz",
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "silver": {
     "label": "Silver (Spot)",
-    "value": 47.4,
-    "change_pct": 1.14,
+    "value": 47.41,
+    "change_pct": 1.18,
     "unit": "$/oz",
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "crude": {
     "label": "Crude (Brent)",
-    "value": 92.04,
-    "change_pct": -0.43,
+    "value": 92.14,
+    "change_pct": -0.32,
     "unit": "$/bbl",
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "usd_inr": {
     "label": "USD/INR",
@@ -41,13 +41,13 @@
     "label": "FII",
     "net_value_cr": 4864.68,
     "date": "16-Nov-2026",
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "dii": {
     "label": "DII",
     "net_value_cr": -3519.05,
     "date": "16-Nov-2026",
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "gold_inr_approx": {
     "label": "Gold \u20b9/10g (approx)",
@@ -61,56 +61,56 @@
   },
   "sector_bank": {
     "label": "Nifty Bank",
-    "value": 62370.4,
-    "change_pct": 2.19,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 62364.7,
+    "change_pct": 2.18,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_it": {
     "label": "Nifty IT",
-    "value": 31714.25,
-    "change_pct": -0.68,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 31675.8,
+    "change_pct": -0.8,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_metal": {
     "label": "Nifty Metal",
-    "value": 12517.0,
-    "change_pct": -1.03,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 12512.3,
+    "change_pct": -1.07,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_auto": {
     "label": "Nifty Auto",
-    "value": 27889.35,
-    "change_pct": -0.14,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 27894.15,
+    "change_pct": -0.13,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_pharma": {
     "label": "Nifty Pharma",
-    "value": 28228.7,
-    "change_pct": -1.08,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 28214.8,
+    "change_pct": -1.12,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_fmcg": {
     "label": "Nifty FMCG",
-    "value": 47638.45,
-    "change_pct": 1.72,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 47605.6,
+    "change_pct": 1.65,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_energy": {
     "label": "Nifty Energy",
-    "value": 37151.35,
-    "change_pct": -0.66,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 37189.5,
+    "change_pct": -0.56,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_realty": {
     "label": "Nifty Realty",
-    "value": 924.9,
-    "change_pct": 0.4,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 925.0,
+    "change_pct": 0.41,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   },
   "sector_psu_bank": {
     "label": "Nifty PSU Bank",
-    "value": 9483.85,
-    "change_pct": 2.43,
-    "fetched_at": "2026-11-17T08:31:02.632498+00:00"
+    "value": 9491.2,
+    "change_pct": 2.51,
+    "fetched_at": "2026-11-17T08:45:45.681478+00:00"
   }
 }
